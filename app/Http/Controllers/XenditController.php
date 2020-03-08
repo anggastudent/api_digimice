@@ -14,7 +14,6 @@ class XenditController extends Controller
     {
         //
       
-        
     }
 
     public function createInvoice(){
@@ -22,10 +21,10 @@ class XenditController extends Controller
       $options['secret_api_key'] = 'xnd_development_rpOvltDUNxwYd4DbJ8czoEJiPKU3AwgeMQsfW6KxNLuJYJvTDmiiJBCeKNaZ0';
       $xenditPHPClient = new \XenditClient\XenditPHPClient($options);
 
-      $external_id = 'tes_api_1';
-      $amount = 5000000;
-      $payer_email = 'tes@api.com';
-      $description = 'Tes bayar';
+      $external_id = 'tes_api_2';
+      $amount = 50000;
+      $payer_email = 'tesbayar@api.com';
+      $description = 'Tes membayar';
 
       $response = $xenditPHPClient->createInvoice($external_id, $amount, $payer_email, $description);
       print_r($response);
@@ -47,7 +46,7 @@ class XenditController extends Controller
       $xenditPHPClient = new \XenditClient\XenditPHPClient($options);
 
       $external_id = 'demo_1475459775872';
-      $amount = 17000;
+      $amount = 800000;
       $bank_code = 'BCA';
       $account_holder_name = 'Angga Jones';
       $account_number = '1231241231';
