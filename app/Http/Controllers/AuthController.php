@@ -32,7 +32,6 @@ class AuthController extends Controller
 
         $user = User::where('email',$email)->first();
         $team = Team::where('user_id',$user->id)->first();
-        $role = "peserta";
 
         if(!$user && !$team){
             $pesan = [
@@ -52,7 +51,6 @@ class AuthController extends Controller
                     'token' => 'null',
                 ]
             ];
-
         }
 
         if(Hash::check($password,$user->password_hash)){
