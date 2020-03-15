@@ -66,6 +66,7 @@ class AuthController extends Controller
                 'result' => [
                     'token' => $newToken,
                     'role_team' => $team->team_role ?? 'tidak ada',
+                    'user_id' => $team->user_id
                 ]
             ];
 

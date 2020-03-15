@@ -18,5 +18,9 @@ class Team extends Model implements AuthenticatableContract, AuthorizableContrac
     public function user(){
     	return $this->belongsTo('App\User','user_id','id');
     }
+
+    public function event(){
+    	return $this->belongsTo('App\Event', 'event_id','id');
+    }
    
 }
