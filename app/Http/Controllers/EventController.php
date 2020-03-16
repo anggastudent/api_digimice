@@ -21,17 +21,19 @@ class EventController extends Controller
 
     public function index(Request $request){
         $user_id = $request->input('user_id');
-        $team = Team::where('user_id', $user_id)->first();
-
-        $result = [
-            'result' => [
-                'event_id' => $team->event->id ?? 'nul',
-                'name' => $team->event->name,
-                'start' => $team->event->start
-            ]
-
-
-        ];
-        return response($result);
+        $team = Team::where('user_id', $user_id)->get();
+        $array = [];
+       
+        foreach ($team as $value) {
+            $array[] = [
+                'id' => $value->event->id,
+                'name' => $value->event->name,
+                'start' => $value->event->start,
+                'end' => $value->event->end
+            ];
+        }
+        
+        
+        return response()->json($array);
     }
 }

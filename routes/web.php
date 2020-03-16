@@ -18,7 +18,7 @@ $router->get('/', function () use ($router) {
 $router->post('/register','AuthController@register');
 $router->post('/login','AuthController@login');
 $router->get('/user','UsersController@index');
-$router->post('/event','EventController@index');
+$router->get('/event','EventController@index');
 $router->get('/session-agenda','EventAgendaController@index');
 $router->get('/event-agenda','EventAgendaController@agenda');
 $router->post('/presensi','EventPresensiController@addPresensi');
