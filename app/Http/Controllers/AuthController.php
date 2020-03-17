@@ -66,7 +66,10 @@ class AuthController extends Controller
                 'result' => [
                     'token' => $newToken,
                     'role_team' => $team->team_role ?? 'tidak ada',
-                    'user_id' => $team->user_id
+                    'user_id' => $team->user_id,
+                    'email' => $user->email,
+                    'name' => $user->name,
+                    'name_team' => $team->name_team
                 ]
             ];
 
@@ -83,7 +86,7 @@ class AuthController extends Controller
         }
 
         return response()->json($pesan,$pesan['code']);
-
+            
     }
 
     //Fungsi Register
