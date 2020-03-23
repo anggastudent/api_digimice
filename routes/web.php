@@ -18,8 +18,8 @@ $router->get('/', function () use ($router) {
 $router->post('/register','AuthController@register');
 $router->post('/login','AuthController@login');
 $router->get('/user','UsersController@index');
+$router->get('/session-agenda','EventPresensiController@index');
 $router->get('/event','EventController@index');
-$router->get('/session-agenda','EventAgendaController@index');
 $router->get('/event-agenda','EventAgendaController@agenda');
 $router->post('/presensi','EventPresensiController@addPresensi');
 $router->get('create-invoice','XenditController@createInvoice');
@@ -27,3 +27,4 @@ $router->get('get-invoice','XenditController@getInvoice');
 $router->get('get-disbursement','XenditController@getDisbursement');
 $router->get('create-disbursement','XenditController@createDisbursement');
 $router->get('paket','PaketController@index');
+$router->post('add-event','EventController@create');

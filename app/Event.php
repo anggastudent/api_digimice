@@ -15,7 +15,7 @@ class Event extends Model implements AuthenticatableContract, AuthorizableContra
     protected $table = "event";
 
     protected $fillable = [
-        'name','start','end'
+        'name','start','end','event_type_id','banner', 'description', 'place', 'address', 'event_status', 'event_paket_id','presence_type', 'event_ticket_price'
     ];
 
    public function team(){
