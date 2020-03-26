@@ -29,12 +29,15 @@ class EventController extends Controller
                 'id' => $value->event->id,
                 'name' => $value->event->name,
                 'start' => $value->event->start,
-                'end' => $value->event->end
+                'end' => $value->event->end,
+                'place' => $value->event->place,
+                'address' => $value->event->address
+                
             ];
         }
         
         
-        return response()->json($array);
+        return  response()->json($array);
     }
 
     public function create(Request $request){
@@ -56,6 +59,7 @@ class EventController extends Controller
         if(!file_exists($target_dir)){
             mkdir($target_dir, 0777, true);
         }
+        
         $file = $target_dir."/image".time().".jpeg";
         $ifp = fopen($file, "wb"); 
 
@@ -84,5 +88,68 @@ class EventController extends Controller
 
         return "Berhasil ditambahkan";
 
+    }
+
+    public function edit($id){
+        $event = Event::findOrFail($id);
+        
+
+       
+        $array[] = [
+            'name' => $event->name,
+            'description' => $event->description,
+            'place' => $event->place,
+            'address' => $event->address,
+            'start' => $event->start,
+            'banner' => $event->banner,
+            'end' => $event->end,
+            'price' => $event->paket->price
+            
+        ];
+        
+        
+        return response()->json($array);
+    }
+
+    public function update(Request $request, $id){
+
+        $event = Event::findOrFail($id);
+
+        $name = $request->input('name');
+        $description = $request->input('description');
+        $place = $request->input('place');
+        $address = $request->input('address');
+        $start = $request->input('start');
+        $end = $request->input('end');
+        $banner = $request->input('banner');
+        $event_ticket_price = $request->input('event_ticket_price');
+
+        $target_dir = "upload/images";
+        unlink($event->banner);
+        $file = $target_dir."/image".time().".jpeg";
+        $ifp = fopen($file, "wb"); 
+
+        $data2 = explode(',', $banner);
+
+        fwrite($ifp, base64_decode($data2[0])); 
+        fclose($ifp); 
+
+        $data = [
+            'name' => $name,
+            'description' => $description,
+            'place' => $place,
+            'address' => $address,
+            'start' => $start,
+            'end' => $end,
+            'banner' => $file,
+            'event_ticket_price' => $event_ticket_price
+
+        ];
+
+        $event->update($data);
+
+
+
+        return "sukses";
     }
 }

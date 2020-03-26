@@ -28,3 +28,5 @@ $router->get('get-disbursement','XenditController@getDisbursement');
 $router->get('create-disbursement','XenditController@createDisbursement');
 $router->get('paket','PaketController@index');
 $router->post('add-event','EventController@create');
+$router->get('edit-event/{id}','EventController@edit');
+$router->put('update-event/{id}','EventController@update');

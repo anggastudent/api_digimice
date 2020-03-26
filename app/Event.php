@@ -21,4 +21,8 @@ class Event extends Model implements AuthenticatableContract, AuthorizableContra
    public function team(){
    		return $this->hasMany('App\Team','id','event_id');
    }
+
+   public function paket(){
+   		return $this->belongsTo('App\Paket','event_paket_id','id');
+   }
 }
