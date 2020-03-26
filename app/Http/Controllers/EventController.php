@@ -31,7 +31,8 @@ class EventController extends Controller
                 'start' => $value->event->start,
                 'end' => $value->event->end,
                 'place' => $value->event->place,
-                'address' => $value->event->address
+                'address' => $value->event->address,
+                'banner' => $value->event->banner
                 
             ];
         }
