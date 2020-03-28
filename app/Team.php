@@ -14,7 +14,11 @@ class Team extends Model implements AuthenticatableContract, AuthorizableContrac
 
     protected $table = "team";
 
-    
+    protected $fillable = [
+        'user_id','team_role','name_team'
+    ];
+
+		    
     public function user(){
     	return $this->belongsTo('App\User','user_id','id');
     }

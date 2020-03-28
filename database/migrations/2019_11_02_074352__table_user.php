@@ -13,13 +13,13 @@ class TableUser extends Migration
      */
     public function up()
     {
-        Schema::create('users', function (Blueprint $table) {
-            $table->bigIncrements('id');
-            $table->string('email',25)->unique();
-            $table->string('password');
-            $table->string('token')->nullable();
-            $table->timestamps();
-        });
+        // Schema::create('users', function (Blueprint $table) {
+        //     $table->bigIncrements('id');
+        //     $table->string('email',25)->unique();
+        //     $table->string('password');
+        //     $table->string('token')->nullable();
+        //     $table->timestamps();
+        // });
     }
 
     /**

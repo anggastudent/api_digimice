@@ -55,6 +55,10 @@ class EventController extends Controller
         $event_paket_id = $request->input('event_paket_id');
         $presence_type = $request->input('presence_type');
         $event_ticket_price = $request->input('event_ticket_price');
+        
+        $user_id = $request->input('user_id');
+        $team_role = $request->input('team_role');
+        $name_team = $request->input('name_team');
 
         $target_dir = "upload/images";
         if(!file_exists($target_dir)){
@@ -87,6 +91,16 @@ class EventController extends Controller
 
         Event::create($data);
 
+        $team = Team::orderBy('id','DESC')->first();
+
+        $edit = [
+            'user_id' => $user_id,
+            'team_role' => $team_role,
+            'name_team' => $name_team
+        ];
+
+        $team->update($edit);
+        
         return "Berhasil ditambahkan";
 
     }

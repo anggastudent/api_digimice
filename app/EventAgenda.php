@@ -18,5 +18,8 @@ class EventAgenda extends Model implements AuthenticatableContract, Authorizable
         'participant_event_id','event_agenda_id','barcode','status'
     ];
 
+    public function session(){
+    	return $this->belongsTo('App\EventSession','event_session_id','id');
+    }
    
 }
