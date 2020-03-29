@@ -19,7 +19,7 @@ class EventAgendaController extends Controller
 
     public function index(Request $request){
         $event_id = $request->input('event_id');
-        $session = EventAgenda::where('event_session_event_id', $event_id)->get();
+        $session = EventAgenda::where('event_session_event_id', $event_id)->orderBy('id','DESC')->get();
 
         $array = [];
        
@@ -31,6 +31,7 @@ class EventAgendaController extends Controller
                 'end' => $value->end,
                 'description' => $value->description,
                 'session' => $value->session->name
+
                 
             ];
         }
@@ -43,6 +44,13 @@ class EventAgendaController extends Controller
         $agenda = EventAgenda::where('event_session_id',$id_session)->where('event_session_event_id',$id_event)->get();
 
         return response()->json($agenda);
+    }
+
+    public function create(Request $request){
+
+        $input = $request->all();
+        EventAgenda::create($input);
+        return "berhasil";
     }
 
     //

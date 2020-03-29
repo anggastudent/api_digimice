@@ -8,18 +8,15 @@ use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Database\Eloquent\Model;
 use Laravel\Lumen\Auth\Authorizable;
 
-class EventAgenda extends Model implements AuthenticatableContract, AuthorizableContract
+class Session extends Model implements AuthenticatableContract, AuthorizableContract
 {
     use Authenticatable, Authorizable;
 
-    protected $table = "event_agenda";
+    protected $table = "event_session";
 
     protected $fillable = [
-        'name','description','start','end','event_session_id','event_session_event_id','event_session_event_event_type_id'
+        'event_id','user_id'
     ];
 
-    public function session(){
-    	return $this->belongsTo('App\EventSession','event_session_id','id');
-    }
    
 }
