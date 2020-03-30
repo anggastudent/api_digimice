@@ -32,3 +32,5 @@ $router->get('edit-event/{id}','EventController@edit');
 $router->put('update-event/{id}','EventController@update');
 $router->get('session','SessionController@index');
 $router->post('add-agenda','EventAgendaController@create');
+$router->get('edit-agenda/{id}','EventAgendaController@edit');
+$router->put('update-agenda/{id}','EventAgendaController@update');

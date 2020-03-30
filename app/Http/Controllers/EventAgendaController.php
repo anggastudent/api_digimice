@@ -30,6 +30,7 @@ class EventAgendaController extends Controller
                 'start' => $value->start,
                 'end' => $value->end,
                 'description' => $value->description,
+                'session_id' => $value->event_session_id,
                 'session' => $value->session->name
 
                 
@@ -50,6 +51,22 @@ class EventAgendaController extends Controller
 
         $input = $request->all();
         EventAgenda::create($input);
+        return "berhasil";
+    }
+
+    public function edit($id){
+
+        $agenda = EventAgenda::findOrFail($id);
+        $array = [
+            $agenda
+        ];
+        return response()->json($array);
+    }
+
+    public function update(Request $request, $id){
+        $agenda = EventAgenda::findOrFail($id);
+        $input = $request->all();
+        $agenda->update($input);
         return "berhasil";
     }
 
