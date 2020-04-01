@@ -15,7 +15,7 @@ class Team extends Model implements AuthenticatableContract, AuthorizableContrac
     protected $table = "team";
 
     protected $fillable = [
-        'user_id','team_role','name_team'
+        'user_id','team_role','name_team', 'event_id'
     ];
 
 		    
