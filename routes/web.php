@@ -35,3 +35,5 @@ $router->post('add-agenda','EventAgendaController@create');
 $router->get('edit-agenda/{id}','EventAgendaController@edit');
 $router->put('update-agenda/{id}','EventAgendaController@update');
 $router->post('add-panitia','UsersController@addPanitia');
+$router->put('upload-materi/{id}','MateriController@upload');
+$router->get('materi/{id}','MateriController@index');
