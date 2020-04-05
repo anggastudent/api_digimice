@@ -23,29 +23,37 @@ class MateriController extends Controller
         return $materi;
     }
 
-    public function upload(Request $request, $id){
+    public function upload(Request $request){
 
-        $agenda = EventAgenda::findOrFail($id);
-        
-        $path = "upload/pdf";
+        $pdf = $request->input('pdf');       
+        $name = $request->input('name');
+        $event_id = $request->input('event_id');
+        $event_agenda_id = $request->input('event_agenda_id');
+        $event_event_type_id = $request->input('event_event_type_id');
 
-        $file = $request->file('name');
-        $name = time() . $file->getClientOriginalName();
-        $file->move($path, $name);
+        $target_dir = "upload/pdf";
+        if(!file_exists($target_dir)){
+            mkdir($target_dir, 0777, true);
+        }
+
+        $file = $target_dir."/".$name.time().".pdf";
+
+        $fopen = fopen($file, "wb");
+        $data_pdf = explode(',', $pdf);
+        fwrite($fopen, base64_decode($data_pdf[0]));
+        fclose($fopen);
 
         $data = [
             'name' => $name,
-            'event_id' => $agenda->event_session_event_id
-            
+            'url' => $file,
+            'event_id' => $event_id,
+            'event_agenda_id' => $event_agenda_id,
+            'event_event_type_id' => $event_event_type_id
         ];
 
-        $materi = Materi::create($data);
+        Materi::create($data);
+
         
-        $edit = [
-            'event_material_id' => $materi->id
-        ];
-
-        $agenda->update($edit);
 
         return "berhasil";
     }

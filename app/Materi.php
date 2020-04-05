@@ -14,7 +14,7 @@ class Materi extends Model implements AuthenticatableContract, AuthorizableContr
 
     protected $table = "event_material";
      protected $fillable = [
-        'name','event_id'
+        'name','event_id','event_agenda_id','event_event_type_id','url'
     ];
    
 }
