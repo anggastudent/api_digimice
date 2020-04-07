@@ -18,5 +18,8 @@ class Session extends Model implements AuthenticatableContract, AuthorizableCont
         'event_id','user_id'
     ];
 
+    public function agenda(){
+    	return $this->hasMany('App\EventAgenda', 'event_session_id','id');
+    }
    
 }

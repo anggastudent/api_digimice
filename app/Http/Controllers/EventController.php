@@ -22,7 +22,6 @@ class EventController extends Controller
     public function index(Request $request){
         $user_id = $request->input('user_id');
         $team = Team::where('user_id', $user_id)->get();
-        $array = [];
        
         foreach ($team as $value) {
             $array[] = [

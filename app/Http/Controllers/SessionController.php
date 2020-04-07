@@ -14,9 +14,18 @@ class SessionController extends Controller
         //
     }
 
-    public function index(){
-        $session = Session::all();
-        return response($session);
+    public function index($id){
+        $session = Session::where('event_id',$id)->get();
+
+        foreach ($session as $value) {
+            $array[] = [
+                'id' => $value->id,
+                'name' => $value->name,
+                'agenda' => $value->agenda
+            ];
+        }
+        
+        return response($array);
     }
     //
 }

@@ -18,7 +18,6 @@ $router->get('/', function () use ($router) {
 $router->post('/register','AuthController@register');
 $router->post('/login','AuthController@login');
 $router->get('/user','UsersController@index');
-$router->get('/session-agenda','EventPresensiController@index');
 $router->get('/event','EventController@index');
 $router->get('agenda','EventAgendaController@index');
 $router->post('/presensi','EventPresensiController@addPresensi');
@@ -30,7 +29,7 @@ $router->get('paket','PaketController@index');
 $router->post('add-event','EventController@create');
 $router->get('edit-event/{id}','EventController@edit');
 $router->put('update-event/{id}','EventController@update');
-$router->get('session','SessionController@index');
+$router->get('session/{id}','SessionController@index');
 $router->post('add-agenda','EventAgendaController@create');
 $router->get('edit-agenda/{id}','EventAgendaController@edit');
 $router->put('update-agenda/{id}','EventAgendaController@update');
