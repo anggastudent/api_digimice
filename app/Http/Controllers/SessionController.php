@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 use App\Session;
+use Illuminate\Http\Request;
 class SessionController extends Controller
 {
     /**
@@ -26,6 +27,32 @@ class SessionController extends Controller
         }
         
         return response($array);
+    }
+
+    public function create(Request $request){
+
+        $input = $request->all();
+
+        Session::create($input);
+
+        return "berhasil";
+    }
+
+    public function edit(Request $request, $id){
+        $session = Session::findOrFail($id);
+        $input = $request->all();
+        $session->update($input);
+
+        return "berhasil";
+    }
+
+    public function show($id){
+
+        $session = Session::findOrFail($id);
+        $array = [
+            $session
+        ];
+        return $array;
     }
     //
 }

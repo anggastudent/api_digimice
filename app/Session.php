@@ -15,7 +15,7 @@ class Session extends Model implements AuthenticatableContract, AuthorizableCont
     protected $table = "event_session";
 
     protected $fillable = [
-        'event_id','user_id'
+        'event_id','name', 'event_event_type_id'
     ];
 
     public function agenda(){

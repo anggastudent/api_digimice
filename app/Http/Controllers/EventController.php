@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 use App\Event;
 use App\Team;
+use App\Session;
 use Illuminate\Http\Request;
 
 class EventController extends Controller
@@ -31,7 +32,8 @@ class EventController extends Controller
                 'end' => $value->event->end,
                 'place' => $value->event->place,
                 'address' => $value->event->address,
-                'banner' => $value->event->banner
+                'banner' => $value->event->banner,
+                'presence_type' => $value->event->presence_type
                 
             ];
         }
@@ -54,6 +56,7 @@ class EventController extends Controller
         $event_paket_id = $request->input('event_paket_id');
         $presence_type = $request->input('presence_type');
         $event_ticket_price = $request->input('event_ticket_price');
+        $name_session = $request->input('name_session');
         
         $user_id = $request->input('user_id');
         $team_role = $request->input('team_role');
@@ -85,12 +88,13 @@ class EventController extends Controller
             'event_status' => $event_status,
             'event_paket_id' => $event_paket_id,
             'presence_type' => $presence_type,
-            'event_ticket_price' => $event_ticket_price
+            'event_ticket_price' => $event_ticket_price,
+
         ];
 
-        Event::create($data);
+        $event = Event::create($data);
 
-        $team = Team::orderBy('id','DESC')->first();
+        $team = Team::where('event_id',$event->id)->first();
 
         $edit = [
             'user_id' => $user_id,
@@ -100,6 +104,11 @@ class EventController extends Controller
 
         $team->update($edit);
         
+        Session::create([
+            'name' => $name_session,
+            'event_event_type_id' => $event_type_id,
+            'event_id' => $event->id
+        ]);
         return "Berhasil ditambahkan";
 
     }
