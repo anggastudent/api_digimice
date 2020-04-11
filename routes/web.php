@@ -39,3 +39,5 @@ $router->get('materi/{id}','MateriController@index');
 $router->post('add-session','SessionController@create');
 $router->put('edit-session/{id}','SessionController@edit');
 $router->get('show-session/{id}','SessionController@show');
+$router->get('provinsi','UsersController@provinsi');
+$router->post('add-pemateri','UsersController@addPemateri');
