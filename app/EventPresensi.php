@@ -15,7 +15,8 @@ class EventPresensi extends Model implements AuthenticatableContract, Authorizab
     protected $table = "event_presensie";
 
     protected $fillable = [
-        'participant_event_id','event_agenda_id','barcode','status'
+        'participant_user_id','event_agenda_event_session_id','barcode','status',
+        'event_agenda_event_session_event_id','event_agenda_event_session_event_event_id'
     ];
 
    

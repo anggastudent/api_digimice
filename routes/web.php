@@ -17,7 +17,7 @@ $router->get('/', function () use ($router) {
 
 $router->post('/register','AuthController@register');
 $router->post('/login','AuthController@login');
-$router->get('/user','UsersController@index');
+$router->get('/user/{id}','UsersController@index');
 $router->get('/event','EventController@index');
 $router->get('agenda','EventAgendaController@index');
 $router->post('/presensi','EventPresensiController@addPresensi');
@@ -41,3 +41,5 @@ $router->put('edit-session/{id}','SessionController@edit');
 $router->get('show-session/{id}','SessionController@show');
 $router->get('provinsi','UsersController@provinsi');
 $router->post('add-pemateri','UsersController@addPemateri');
+$router->get('edit-user/{id}','UsersController@edit');
+$router->put('update-user/{id}','UsersController@update');
