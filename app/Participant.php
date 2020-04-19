@@ -15,7 +15,8 @@ class Participant extends Model implements AuthenticatableContract, Authorizable
     protected $table = "participant";
 
     protected $fillable = [
-        'event_id','user_id'
+        'event_id','user_id','kit','register','payment','payment_status',
+        'participant_group_id'
     ];
 
    

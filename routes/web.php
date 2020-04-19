@@ -43,3 +43,7 @@ $router->get('provinsi','UsersController@provinsi');
 $router->post('add-pemateri','UsersController@addPemateri');
 $router->get('edit-user/{id}','UsersController@edit');
 $router->put('update-user/{id}','UsersController@update');
+$router->post('add-participant','EventPresensiController@addParticipant');
+$router->post('set-qrcode','EventPresensiController@setQrCode');
+$router->post('scan-qrcode','EventPresensiController@scanQrCode');
+$router->get('rekapitulasi','EventPresensiController@rekapitulasi');
