@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App\EventPresensi;
 use App\Participant;
 use App\Kabupaten;
+use App\Session;
 use App\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
@@ -42,6 +43,7 @@ class EventPresensiController extends Controller
         $participant_group_id = $request->input('participant_group_id');
         $session_id = $request->input('session_id');
 
+        $session = Session::where('event_id',$event_id)->get('id');
 
         $data = [
             'event_id' => $event_id,
@@ -55,16 +57,20 @@ class EventPresensiController extends Controller
 
         $participant = Participant::create($data);
 
-        $data2 = [
-            'barcode' => $this->getRandomString(8)."-MOB-",
-            'status' => "Belum Hadir",
-            'participant_user_id' => $user_id,
-            'event_agenda_event_session_id' => $session_id,
-            'event_agenda_event_session_event_id' => $event_id,
-            'event_agenda_event_session_event_event_type_id' => "3"
-        ];
+        $barcode = $this->getRandomString(8)."-MOB-";
+        foreach($session as $value){
 
-        EventPresensi::create($data2);
+            $data2 = [
+                'barcode' => $barcode,
+                'status' => "Belum Hadir",
+                'participant_user_id' => $user_id,
+                'event_agenda_event_session_id' => $value->id,
+                'event_agenda_event_session_event_id' => $event_id,
+                'event_agenda_event_session_event_event_type_id' => "3"
+            ];
+            EventPresensi::create($data2);
+            
+        }
 
         return "berhasil tambah participant";
     }
@@ -72,19 +78,25 @@ class EventPresensiController extends Controller
     public function setQrCode(Request $request){
         $email = $request->input('email');
         $kode_qr = $request->input('kode_qr');
-        $session_id = $request->input('session_id');
+        $event_id = $request->input('event_id');
+
+        $session = Session::where('event_id',$event_id)->get('id');
 
         $user = User::where('email',$email)->first();
+
         if($user){
+
             $user_id = $user->id;
+            foreach ($session as $value) {
+                $presensi = EventPresensi::where('participant_user_id', $user_id)->where('event_agenda_event_session_id',$value->id)->first();
 
-            $presensi = EventPresensi::where('participant_user_id', $user_id)->where('event_agenda_event_session_id',$session_id)->first();
+                $data = [
+                    'barcode' => $kode_qr
+                ];
 
-            $data = [
-                'barcode' => $kode_qr
-            ];
-
-            $presensi->update($data);
+                $presensi->update($data);
+            }
+            
 
             return "berhasil";
         }
@@ -97,15 +109,17 @@ class EventPresensiController extends Controller
 
     public function scanQrCode(Request $request){
         $qr_code = $request->input('qr_code');
+        $session_id = $request->input('session_id');
+        $event_id = $request->input('event_id');
         
-        if($presensi = EventPresensi::where('barcode', $qr_code)->first()){
+        if($presensi = EventPresensi::where('barcode', $qr_code)->where('event_agenda_event_session_id',$session_id)->first()){
             $data = [
                 'status' => "Hadir" 
             ];
 
            $presensi->update($data);
 
-            $participant = Participant::where('user_id',$presensi->participant_user_id)->first();
+            $participant = Participant::where('user_id',$presensi->participant_user_id)->where('event_id',$event_id)->first();
 
             $data2 = [
                 'kit' => "Sudah",
