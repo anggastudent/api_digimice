@@ -20,7 +20,6 @@ $router->post('/login','AuthController@login');
 $router->get('/user/{id}','UsersController@index');
 $router->get('/event','EventController@index');
 $router->get('agenda','EventAgendaController@index');
-$router->post('/presensi','EventPresensiController@addPresensi');
 $router->get('create-invoice','XenditController@createInvoice');
 $router->get('get-invoice','XenditController@getInvoice');
 $router->get('get-disbursement','XenditController@getDisbursement');

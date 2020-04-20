@@ -27,21 +27,13 @@ class EventPresensiController extends Controller
 
     }
 
-    public function addPresensi(Request $request){
-
-        $input = $request->all();
-        EventPresensi::create($input);
-
-        return response("berhasil absen");
-    }
-
     public function addParticipant(Request $request){
 
         $event_id = $request->input('event_id');
         $user_id = $request->input('user_id');
         $payment = $request->input('payment');
         $participant_group_id = $request->input('participant_group_id');
-        $session_id = $request->input('session_id');
+        $payment_status = $request->input('payment_status');
 
         $session = Session::where('event_id',$event_id)->get('id');
 
@@ -51,7 +43,7 @@ class EventPresensiController extends Controller
             'kit' => "Belum",
             'register' => "Belum",
             'payment' => $payment,
-            'payment_status' => "Belum Lunas",
+            'payment_status' => $payment_status,
             'participant_group_id' => $participant_group_id
         ];
 
@@ -76,9 +68,11 @@ class EventPresensiController extends Controller
     }
 
     public function setQrCode(Request $request){
+        
         $email = $request->input('email');
         $kode_qr = $request->input('kode_qr');
         $event_id = $request->input('event_id');
+        $session_id = $request->input('session_id');
 
         $session = Session::where('event_id',$event_id)->get('id');
 
@@ -87,6 +81,12 @@ class EventPresensiController extends Controller
         if($user){
 
             $user_id = $user->id;
+
+            if($cek_qr = EventPresensi::where('barcode',$kode_qr)->where('event_agenda_event_session_id',$session_id)->where('participant_user_id',$user_id)->first()){
+
+                return "QR Code Sudah terdaftar";
+            }
+
             foreach ($session as $value) {
                 $presensi = EventPresensi::where('participant_user_id', $user_id)->where('event_agenda_event_session_id',$value->id)->first();
 
@@ -96,7 +96,15 @@ class EventPresensiController extends Controller
 
                 $presensi->update($data);
             }
+
+
+            $absen = EventPresensi::where('participant_user_id',$user_id)->where('event_agenda_event_session_id',$session_id);
+
+            $data2 = [
+                'status' => "Hadir"
+            ];
             
+            $absen->update($data2);
 
             return "berhasil";
         }
@@ -112,6 +120,9 @@ class EventPresensiController extends Controller
         $session_id = $request->input('session_id');
         $event_id = $request->input('event_id');
         
+        if($cek_absen = EventPresensi::where('barcode', $qr_code)->where('event_agenda_event_session_id', $session_id)->where('status', "Hadir")->first()){
+            return "Sudah Absen";
+        }
         if($presensi = EventPresensi::where('barcode', $qr_code)->where('event_agenda_event_session_id',$session_id)->first()){
             $data = [
                 'status' => "Hadir" 

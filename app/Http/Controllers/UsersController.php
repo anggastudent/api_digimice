@@ -56,7 +56,7 @@ class UsersController extends Controller
             return "berhasil";
 
         }else{
-            return "email tidak tersedia";
+            return "email belum terdaftar";
         }
 
         
