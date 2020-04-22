@@ -64,7 +64,7 @@ class EventPresensiController extends Controller
             
         }
 
-        return "berhasil tambah participant";
+        return "Berhasil tambah participant";
     }
 
     public function setQrCode(Request $request){
@@ -106,10 +106,10 @@ class EventPresensiController extends Controller
             
             $absen->update($data2);
 
-            return "berhasil";
+            return "Berhasil set Email $email QR Code $kode_qr";
         }
         else{
-            return "email belum terdaftar";
+            return "Email belum terdaftar";
         }
         
 
@@ -121,7 +121,7 @@ class EventPresensiController extends Controller
         $event_id = $request->input('event_id');
         
         if($cek_absen = EventPresensi::where('barcode', $qr_code)->where('event_agenda_event_session_id', $session_id)->where('status', "Hadir")->first()){
-            return "Sudah Absen";
+            return $cek_absen->user->name. " Sudah Absen";
         }
         if($presensi = EventPresensi::where('barcode', $qr_code)->where('event_agenda_event_session_id',$session_id)->first()){
             $data = [
@@ -139,7 +139,7 @@ class EventPresensiController extends Controller
 
             $participant->update($data2);
             //return $presensi;
-            return "Berhasil Absen";
+            return $presensi->user->name ." Berhasil Absen";
         }else{
             return "QR Code salah";
         }
