@@ -46,3 +46,8 @@ $router->post('add-participant','EventPresensiController@addParticipant');
 $router->post('set-qrcode','EventPresensiController@setQrCode');
 $router->post('scan-qrcode','EventPresensiController@scanQrCode');
 $router->get('rekapitulasi','EventPresensiController@rekapitulasi');
+$router->post('callback-invoice/{id}','XenditController@callbackInvoice');
+$router->post('callback-disbursement/{id}','XenditController@callbackDisbursement');
+$router->get('pending/{id}','EventController@orderEventPending');
+$router->get('expired/{id}','EventController@orderEventExpired');
+$router->get('paid/{id}','EventController@orderEventPaid');

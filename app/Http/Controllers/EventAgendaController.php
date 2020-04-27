@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 use App\EventAgenda;
-use App\EventSession;
+
 class EventAgendaController extends Controller
 {
     /**

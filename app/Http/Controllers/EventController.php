@@ -1,9 +1,15 @@
 <?php
 
 namespace App\Http\Controllers;
+
+require '../vendor/autoload.php';
+
+use Xendit\Xendit;
 use App\Event;
 use App\Team;
 use App\Session;
+use App\EventOrderHistory;
+
 use Illuminate\Http\Request;
 
 class EventController extends Controller
@@ -15,14 +21,15 @@ class EventController extends Controller
      */
     public function __construct()
     {
-        //
+       
+
     }
     
     //
 
     public function index(Request $request){
         $user_id = $request->input('user_id');
-        $team = Team::where('user_id', $user_id)->get();
+        $team = Team::where('user_id', $user_id)->orderBy('id','DESC')->get();
        
         foreach ($team as $value) {
             $array[] = [
@@ -44,6 +51,7 @@ class EventController extends Controller
 
     public function create(Request $request){
 
+        
         $name = $request->input('name');
         $start = $request->input('start');
         $end = $request->input('end');
@@ -57,10 +65,13 @@ class EventController extends Controller
         $presence_type = $request->input('presence_type');
         $event_ticket_price = $request->input('event_ticket_price');
         $name_session = $request->input('name_session');
+        $name_packet = $request->input('name_packet');
+        $price_packet = $request->input('price_packet');
         
         $user_id = $request->input('user_id');
         $team_role = $request->input('team_role');
         $name_team = $request->input('name_team');
+        $email = $request->input('email');
 
         $target_dir = "upload/images";
         if(!file_exists($target_dir)){
@@ -109,6 +120,39 @@ class EventController extends Controller
             'event_event_type_id' => $event_type_id,
             'event_id' => $event->id
         ]);
+
+        if(!$price_packet == "0"){
+            Xendit::setApiKey(getenv('SECRET_API_KEY'));
+            $params = [
+              'external_id' => $name_packet,
+              'payer_email' => $email,
+              'description' => 'Pembuatan Invoice untuk pembelian '.$name_packet,
+              'amount' => $price_packet
+            ];
+
+            $createInvoice = \Xendit\Invoice::create($params);
+
+            $data3 = [
+                'status' => "PENDING",
+                'event_id' => $event->id,
+                'event_paket_event_id' => $event_paket_id,
+                'id_invoice' => $createInvoice['id'],
+                'user_id' => $user_id
+            ];
+
+            EventOrderHistory::create($data3);
+        }else{
+             $data3 = [
+                'status' => "PAID",
+                'event_id' => $event->id,
+                'event_paket_event_id' => $event_paket_id,
+                'id_invoice' => "no invoice",
+                'user_id' => $user_id
+            ];
+
+            EventOrderHistory::create($data3);
+        }
+        
         return "Berhasil ditambahkan";
 
     }
@@ -186,5 +230,88 @@ class EventController extends Controller
 
 
         return "sukses";
+    }
+
+    public function orderEventPending($id){
+
+        $order_event = EventOrderHistory::where('user_id',$id)->where('status',"PENDING")->orderBy('id','DESC')->get();
+        Xendit::setApiKey(getenv('SECRET_API_KEY'));
+
+        foreach ($order_event as $value) {
+
+            $id = $value->id_invoice;
+            $getInvoice = \Xendit\Invoice::retrieve($id);
+
+            $array[] = [
+                'id_invoice' => $value->id_invoice,
+                'status' => $value->status,
+                'name_paket' => $value->paket->name,
+                'price' => $value->paket->price,
+                'max_participant' => $value->paket->max_participant,
+                'expired' => $getInvoice['expiry_date']
+            ];
+        }
+        return $array;
+
+    }
+
+    public function orderEventExpired($id){
+        $order_event = EventOrderHistory::where('user_id',$id)->where('status',"EXPIRED")->orderBy('id','DESC')->get();
+        
+        Xendit::setApiKey(getenv('SECRET_API_KEY'));
+
+        foreach ($order_event as $value) {
+
+            $id = $value->id_invoice;
+            $getInvoice = \Xendit\Invoice::retrieve($id);
+
+            $array[] = [
+                'id_invoice' => $value->id_invoice,
+                'status' => $value->status,
+                'name_paket' => $value->paket->name,
+                'price' => $value->paket->price,
+                'max_participant' => $value->paket->max_participant,
+                'expired' => $getInvoice['expiry_date']
+            ];
+        }
+        return $array;
+
+    }
+
+    public function orderEventPaid($id){
+        $order_event = EventOrderHistory::where('user_id',$id)->where('status',"PAID")->orderBy('id','DESC')->get();
+        
+        Xendit::setApiKey(getenv('SECRET_API_KEY'));
+
+        foreach ($order_event as $value) {
+
+            $id = $value->id_invoice;
+            
+            if(!$id == "no invoice"){
+                $getInvoice = \Xendit\Invoice::retrieve($id);
+
+                $array[] = [
+                    
+                    'id_invoice' => $value->id_invoice,
+                    'status' => $value->status,
+                    'name_paket' => $value->paket->name,
+                    'price' => $value->paket->price,
+                    'max_participant' => $value->paket->max_participant,
+                    'paid_at' => $getInvoice['paid_at']
+                ];
+            }else{
+                $array[] = [
+                        
+                    'id_invoice' => $value->id_invoice,
+                    'status' => $value->status,
+                    'name_paket' => $value->paket->name,
+                    'price' => $value->paket->price,
+                    'max_participant' => $value->paket->max_participant,
+                    'paid_at' => $value->created_at
+                ];   
+            }
+            
+        }
+        return $array;
     }
 }
