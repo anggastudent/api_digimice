@@ -22,5 +22,9 @@ class EventOrderHistory extends Model implements AuthenticatableContract, Author
     	return $this->belongsTo('App\Paket','event_paket_event_id','id');
     }
 
+    public function event(){
+    	return $this->belongsTo('App\Event','event_id','id');
+    }
+
    
 }

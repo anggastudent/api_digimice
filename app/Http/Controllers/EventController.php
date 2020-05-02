@@ -30,7 +30,9 @@ class EventController extends Controller
     public function index(Request $request){
         $user_id = $request->input('user_id');
         $team = Team::where('user_id', $user_id)->orderBy('id','DESC')->get();
-       
+        
+        $array = [];
+
         foreach ($team as $value) {
             $array[] = [
                 'id' => $value->event->id,
@@ -73,19 +75,26 @@ class EventController extends Controller
         $name_team = $request->input('name_team');
         $email = $request->input('email');
 
-        $target_dir = "upload/images";
-        if(!file_exists($target_dir)){
-            mkdir($target_dir, 0777, true);
+        if(trim($banner) == ''){
+            $file = "upload/images/blank.jpg";
+        }else{
+
+            $target_dir = "upload/images";
+            
+            if(!file_exists($target_dir)){
+                mkdir($target_dir, 0777, true);
+            }
+            
+            $file = $target_dir."/image".time().".jpeg";
+            $ifp = fopen($file, "wb"); 
+
+            $data2 = explode(',', $banner);
+
+            fwrite($ifp, base64_decode($data2[0])); 
+            fclose($ifp);
         }
-        
-        $file = $target_dir."/image".time().".jpeg";
-        $ifp = fopen($file, "wb"); 
 
-        $data2 = explode(',', $banner);
-
-        fwrite($ifp, base64_decode($data2[0])); 
-        fclose($ifp); 
-
+         
         $data = [
 
             'name' => $name,
@@ -160,8 +169,6 @@ class EventController extends Controller
     public function edit($id){
         $event = Event::findOrFail($id);
         
-
-       
         $array[] = [
             'name' => $event->name,
             'description' => $event->description,
@@ -170,7 +177,8 @@ class EventController extends Controller
             'start' => $event->start,
             'banner' => $event->banner,
             'end' => $event->end,
-            'price' => $event->paket->price
+            'price' => $event->paket->price,
+            'ticket' => $event->event_ticket_price
             
         ];
         
@@ -194,6 +202,20 @@ class EventController extends Controller
         
         if(trim($banner == '')){
             $banner = $request->except('banner');
+
+            $data = [
+                'name' => $name,
+                'description' => $description,
+                'place' => $place,
+                'address' => $address,
+                'start' => $start,
+                'end' => $end,
+                'event_ticket_price' => $event_ticket_price
+
+            ];
+
+            $event->update($data);
+            
         }else{
             $target_dir = "upload/images";
         
@@ -227,8 +249,6 @@ class EventController extends Controller
         }
         
 
-
-
         return "sukses";
     }
 
@@ -236,7 +256,7 @@ class EventController extends Controller
 
         $order_event = EventOrderHistory::where('user_id',$id)->where('status',"PENDING")->orderBy('id','DESC')->get();
         Xendit::setApiKey(getenv('SECRET_API_KEY'));
-
+        $array = [];
         foreach ($order_event as $value) {
 
             $id = $value->id_invoice;
@@ -244,11 +264,14 @@ class EventController extends Controller
 
             $array[] = [
                 'id_invoice' => $value->id_invoice,
+                'name_event' => $value->event->name,
                 'status' => $value->status,
                 'name_paket' => $value->paket->name,
                 'price' => $value->paket->price,
                 'max_participant' => $value->paket->max_participant,
-                'expired' => $getInvoice['expiry_date']
+                'expired' => $getInvoice['expiry_date'],
+                'url' => $getInvoice['invoice_url']
+                
             ];
         }
         return $array;
@@ -259,7 +282,7 @@ class EventController extends Controller
         $order_event = EventOrderHistory::where('user_id',$id)->where('status',"EXPIRED")->orderBy('id','DESC')->get();
         
         Xendit::setApiKey(getenv('SECRET_API_KEY'));
-
+        $array = [];
         foreach ($order_event as $value) {
 
             $id = $value->id_invoice;
@@ -267,11 +290,13 @@ class EventController extends Controller
 
             $array[] = [
                 'id_invoice' => $value->id_invoice,
+                'name_event' => $value->event->name,
                 'status' => $value->status,
                 'name_paket' => $value->paket->name,
                 'price' => $value->paket->price,
                 'max_participant' => $value->paket->max_participant,
-                'expired' => $getInvoice['expiry_date']
+                'expired' => $getInvoice['expiry_date'],
+                'url' => $getInvoice['invoice_url']
             ];
         }
         return $array;
@@ -282,32 +307,36 @@ class EventController extends Controller
         $order_event = EventOrderHistory::where('user_id',$id)->where('status',"PAID")->orderBy('id','DESC')->get();
         
         Xendit::setApiKey(getenv('SECRET_API_KEY'));
-
+        $array = [];
         foreach ($order_event as $value) {
 
             $id = $value->id_invoice;
             
-            if(!$id == "no invoice"){
+            if($id != "no invoice"){
                 $getInvoice = \Xendit\Invoice::retrieve($id);
 
                 $array[] = [
                     
                     'id_invoice' => $value->id_invoice,
+                    'name_event' => $value->event->name,
                     'status' => $value->status,
                     'name_paket' => $value->paket->name,
                     'price' => $value->paket->price,
                     'max_participant' => $value->paket->max_participant,
-                    'paid_at' => $getInvoice['paid_at']
+                    'paid_at' => $getInvoice['paid_at'],
+                    'url' => $getInvoice['invoice_url']
                 ];
             }else{
                 $array[] = [
                         
                     'id_invoice' => $value->id_invoice,
+                    'name_event' => $value->event->name,
                     'status' => $value->status,
                     'name_paket' => $value->paket->name,
                     'price' => $value->paket->price,
                     'max_participant' => $value->paket->max_participant,
-                    'paid_at' => $value->created_at
+                    'paid_at' => $value->created_at,
+                    'url' => ""
                 ];   
             }
             

@@ -153,6 +153,8 @@ class EventPresensiController extends Controller
 
         $presensi = EventPresensi::where('event_agenda_event_session_id',$session_id)->where('event_agenda_event_session_event_id',$event_id)->get();
         
+        $array = [];
+        
         foreach ($presensi as $value) {
             $kabupaten = Kabupaten::findOrFail($value->user->regencies_id);
 

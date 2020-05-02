@@ -43,17 +43,26 @@ class UsersController extends Controller
         $name_team = $request->input('name_team');
 
         $user = User::where('email', $email)->first();
+        
 
         if($user){
-            $data = [
-                'user_id' => $user->id,
-                'event_id' => $event_id,
-                'team_role' => "eo",
-                'name_team' => $name_team
-            ];
 
-            Team::create($data);
-            return "berhasil";
+            $team = Team::where('user_id',$user->id)->where('event_id', $event_id)->first();
+            if($user && $team){
+                return "email sudah terdaftar";
+                
+            }else{
+                $data = [
+                    'user_id' => $user->id,
+                    'event_id' => $event_id,
+                    'team_role' => "eo",
+                    'name_team' => $name_team
+                ];
+
+                Team::create($data);
+                return "berhasil";
+            }
+            
 
         }else{
             return "email belum terdaftar";
@@ -97,7 +106,7 @@ class UsersController extends Controller
 
     public function provinsi(){
         $provinsi = Provinsi::all();
-
+        $array = [];
         foreach ($provinsi as $value) {
             $array [] = [
                 'id' => $value->id,
@@ -110,6 +119,7 @@ class UsersController extends Controller
 
     public function edit($id){
         $user = User::findOrFail($id);
+        
         $array = [
             $user
         ];

@@ -19,7 +19,7 @@ class EventAgendaController extends Controller
 
     public function index(Request $request){
         $event_id = $request->input('event_id');
-        $session = EventAgenda::where('event_session_event_id', $event_id)->orderBy('id','DESC')->get();
+        $session = EventAgenda::where('event_session_event_id', $event_id)->get();
 
         $array = [];
        

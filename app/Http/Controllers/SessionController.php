@@ -17,7 +17,7 @@ class SessionController extends Controller
 
     public function index($id){
         $session = Session::where('event_id',$id)->get();
-
+        $array = [];
         foreach ($session as $value) {
             $array[] = [
                 'id' => $value->id,
@@ -47,7 +47,7 @@ class SessionController extends Controller
     }
 
     public function show($id){
-
+        $array = [];
         $session = Session::findOrFail($id);
         $array = [
             $session
