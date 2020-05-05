@@ -90,18 +90,22 @@ class UsersController extends Controller
             'regencies_id' => $regencies_id
         ];
 
-        $user = User::create($data);
+        if($user = User::where('email',$email)->first()){
+            return "Email sudah terdaftar";
+        }else{
 
-        $data2 = [
-            'user_id' => $user->id,
-            'event_id' => $event_id
-        ];
+            $user = User::create($data);
 
-        Pemateri::create($data2);
+            $data2 = [
+                'user_id' => $user->id,
+                'event_id' => $event_id
+            ];
 
-        return "berhasil";
+            Pemateri::create($data2);
 
-        
+            return "Berhasil ditambahkan";
+        }
+
     }
 
     public function provinsi(){
@@ -138,8 +142,6 @@ class UsersController extends Controller
 
         if(trim($avatar) == ''){
 
-            $avatar = $request->except('avatar');
-
         }else{
 
             $target_dir = "upload/images";
@@ -148,10 +150,10 @@ class UsersController extends Controller
 
                 mkdir($target_dir, 0777, true);
             }
-
-            if($user->avatar != null){
+            if (!$user->avatar=="upload/images/blank.jpg") {
                 unlink($user->avatar);
             }
+            
             
             
             $file = $target_dir."/image".time().".jpeg";

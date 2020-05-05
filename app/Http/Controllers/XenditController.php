@@ -68,7 +68,7 @@ class XenditController extends Controller
 
     public function getInvoice(){
       
-      $id = "5ea455591c9cf11118cbf228";
+      $id = "5eaece0c1c9cf11118cc354b";
       $getInvoice = \Xendit\Invoice::retrieve($id);
       return $array = [$getInvoice];
 

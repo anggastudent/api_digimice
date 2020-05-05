@@ -34,17 +34,20 @@ class EventController extends Controller
         $array = [];
 
         foreach ($team as $value) {
-            $array[] = [
-                'id' => $value->event->id,
-                'name' => $value->event->name,
-                'start' => $value->event->start,
-                'end' => $value->event->end,
-                'place' => $value->event->place,
-                'address' => $value->event->address,
-                'banner' => $value->event->banner,
-                'presence_type' => $value->event->presence_type
+            if($value->event->event_status == "true"){
+                $array[] = [
+                    'id' => $value->event->id,
+                    'name' => $value->event->name,
+                    'start' => $value->event->start,
+                    'end' => $value->event->end,
+                    'place' => $value->event->place,
+                    'address' => $value->event->address,
+                    'banner' => $value->event->banner,
+                    'presence_type' => $value->event->presence_type
                 
-            ];
+                ];
+            }
+            
         }
         
         
@@ -77,6 +80,23 @@ class EventController extends Controller
 
         if(trim($banner) == ''){
             $file = "upload/images/blank.jpg";
+
+            $data = [
+
+                'name' => $name,
+                'start' => $start,
+                'end' => $end,
+                'event_type_id' => $event_type_id,
+                'banner' => $file,
+                'description' => $description,
+                'place' => $place,
+                'address' => $address,
+                'event_status' => $event_status,
+                'event_paket_id' => $event_paket_id,
+                'presence_type' => $presence_type,
+                'event_ticket_price' => $event_ticket_price,
+
+            ];
         }else{
 
             $target_dir = "upload/images";
@@ -92,25 +112,27 @@ class EventController extends Controller
 
             fwrite($ifp, base64_decode($data2[0])); 
             fclose($ifp);
+
+            $data = [
+
+                'name' => $name,
+                'start' => $start,
+                'end' => $end,
+                'event_type_id' => $event_type_id,
+                'banner' => $file,
+                'description' => $description,
+                'place' => $place,
+                'address' => $address,
+                'event_status' => $event_status,
+                'event_paket_id' => $event_paket_id,
+                'presence_type' => $presence_type,
+                'event_ticket_price' => $event_ticket_price,
+
+            ];
         }
 
          
-        $data = [
-
-            'name' => $name,
-            'start' => $start,
-            'end' => $end,
-            'event_type_id' => $event_type_id,
-            'banner' => $file,
-            'description' => $description,
-            'place' => $place,
-            'address' => $address,
-            'event_status' => $event_status,
-            'event_paket_id' => $event_paket_id,
-            'presence_type' => $presence_type,
-            'event_ticket_price' => $event_ticket_price,
-
-        ];
+        
 
         $event = Event::create($data);
 
@@ -201,8 +223,7 @@ class EventController extends Controller
 
         
         if(trim($banner == '')){
-            $banner = $request->except('banner');
-
+            
             $data = [
                 'name' => $name,
                 'description' => $description,
@@ -223,7 +244,10 @@ class EventController extends Controller
                 mkdir($target_dir, 0777, true);
             }
             
-            unlink($event->banner);
+            if(!$event->banner=="upload/images/blank.jpg"){
+                unlink($event->banner);
+            }
+            
             
             $file = $target_dir."/image".time().".jpeg";
             $ifp = fopen($file, "wb"); 

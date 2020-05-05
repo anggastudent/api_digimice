@@ -111,7 +111,8 @@ class AuthController extends Controller
             'name' => $name,
             'role' => $role,
             'phone' => $phone,
-            'regencies_id' => $regencies_id
+            'regencies_id' => $regencies_id,
+            'avatar' => "upload/images/blank.jpg"
         ];
 
         if(User::create($data)){
