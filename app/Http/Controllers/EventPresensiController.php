@@ -170,6 +170,39 @@ class EventPresensiController extends Controller
         return $array;
     }
 
+    public function search(Request $request){
+        $search = $request->input('search');
+        $event_id = $request->input('event_id');
+        $session_id = $request->input('session_id');
+
+        $presensi = EventPresensi::where('event_agenda_event_session_id',$session_id)->where('event_agenda_event_session_event_id',$event_id)->get();
+        
+        $array = [];
+        
+        foreach ($presensi as $value) {
+            
+            $kabupaten = Kabupaten::findOrFail($value->user->regencies_id);
+            $mysearch = strtolower($search);
+            $data = strtolower($value->user->name);
+
+            $proses_search = strchr($data, $mysearch);
+            
+            if($proses_search){
+               
+                $array[] = [
+                'name' => $value->user->name,
+                'email' => $value->user->email,
+                'phone' => $value->user->phone,
+                'rekap' => $value->status,
+                'payment_status' => $value->participant->payment_status,
+                'provinsi' => $kabupaten->provinsi->name
+            ];
+            }
+            
+        }
+        return $array;
+    }
+
     //Fungsi Random String
     public function getRandomString($panjang = 32){
         $karakter = '012345678dssd9abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';

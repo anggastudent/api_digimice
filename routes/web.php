@@ -51,3 +51,10 @@ $router->post('callback-disbursement/{id}','XenditController@callbackDisbursemen
 $router->get('pending/{id}','EventController@orderEventPending');
 $router->get('expired/{id}','EventController@orderEventExpired');
 $router->get('paid/{id}','EventController@orderEventPaid');
+$router->get('search-event','EventController@search');
+$router->get('search-session','SessionController@search');
+$router->get('search-agenda','EventAgendaController@search');
+$router->get('search-rekapitulasi','EventPresensiController@search');
+$router->get('delete-session/{id}','SessionController@delete');
+$router->get('delete-agenda/{id}','EventAgendaController@delete');
+$router->get('delete-materi/{id}','MateriController@delete');

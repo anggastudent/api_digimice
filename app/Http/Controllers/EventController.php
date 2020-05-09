@@ -54,6 +54,40 @@ class EventController extends Controller
         return  response()->json($array);
     }
 
+    public function search(Request $request){
+        $user_id = $request->input('user_id');
+        $team = Team::where('user_id', $user_id)->orderBy('id','DESC')->get();
+        $search = $request->input('search');
+        $array = [];
+
+
+        foreach ($team as $value) {
+
+            $mysearch = strtolower($search);
+            $data = strtolower($value->event->name);
+
+            $proses_search = strchr($data, $mysearch);
+            
+            if($value->event->event_status == "true" && $proses_search){
+                $array[] = [
+                    'id' => $value->event->id,
+                    'name' => $value->event->name,
+                    'start' => $value->event->start,
+                    'end' => $value->event->end,
+                    'place' => $value->event->place,
+                    'address' => $value->event->address,
+                    'banner' => $value->event->banner,
+                    'presence_type' => $value->event->presence_type
+                
+                ];
+            }
+            
+        }
+        
+        
+        return  response()->json($array);
+    }
+
     public function create(Request $request){
 
         
