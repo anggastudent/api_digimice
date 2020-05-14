@@ -1,9 +1,13 @@
 <?php
 
 namespace App\Http\Controllers;
+require '../vendor/autoload.php';
+
+use Xendit\Xendit;
 use App\EventPresensi;
 use App\Participant;
 use App\Kabupaten;
+use App\Event;
 use App\Session;
 use App\User;
 use Illuminate\Support\Facades\Hash;
@@ -35,6 +39,7 @@ class EventPresensiController extends Controller
         $participant_group_id = $request->input('participant_group_id');
         $payment_status = $request->input('payment_status');
 
+        $event = Event::where('id',$event_id)->first();
         $session = Session::where('event_id',$event_id)->get('id');
 
         $data = [

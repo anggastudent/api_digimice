@@ -99,7 +99,6 @@ class AuthController extends Controller
         $email = $request->input('email');
         $password = $request->input('password');
         $name = $request->input('name');
-        $role = $request->input('role');
         $phone = $request->input('phone');
         $regencies_id = $request->input('regencies_id');
 
@@ -109,7 +108,7 @@ class AuthController extends Controller
             'email' => $email,
             'password_hash' => $hasPassword,
             'name' => $name,
-            'role' => $role,
+            'role' => "participant",
             'phone' => $phone,
             'regencies_id' => $regencies_id,
             'avatar' => "upload/images/blank.jpg"

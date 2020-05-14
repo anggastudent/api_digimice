@@ -192,7 +192,8 @@ class EventController extends Controller
               'external_id' => $name_packet,
               'payer_email' => $email,
               'description' => 'Pembuatan Invoice untuk pembelian '.$name_packet,
-              'amount' => $price_packet
+              'amount' => $price_packet,
+              'should_send_email' => true
             ];
 
             $createInvoice = \Xendit\Invoice::create($params);
@@ -328,11 +329,21 @@ class EventController extends Controller
                 'price' => $value->paket->price,
                 'max_participant' => $value->paket->max_participant,
                 'expired' => $getInvoice['expiry_date'],
-                'url' => $getInvoice['invoice_url']
+                'url' => $getInvoice['invoice_url'],
+                'bank' => $getInvoice['available_banks']
                 
             ];
         }
         return $array;
+
+    }
+
+    public function expiredEventPending($id){
+
+        Xendit::setApiKey(getenv('SECRET_API_KEY'));
+        $expireInvoice = \Xendit\Invoice::expireInvoice($id);
+        
+        return "Berhasil dibatalkan";
 
     }
 

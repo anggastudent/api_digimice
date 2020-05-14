@@ -58,3 +58,4 @@ $router->get('search-rekapitulasi','EventPresensiController@search');
 $router->get('delete-session/{id}','SessionController@delete');
 $router->get('delete-agenda/{id}','EventAgendaController@delete');
 $router->get('delete-materi/{id}','MateriController@delete');
+$router->get('expired-invoice/{id}','EventController@expiredEventPending');

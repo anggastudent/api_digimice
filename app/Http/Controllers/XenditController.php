@@ -29,9 +29,10 @@ class XenditController extends Controller
 
       $params = [
           'external_id' => 'tes_api_8',
-          'payer_email' => 'a123aku@gmail.com',
+          'payer_email' => 'anggadwisaputra83@gmail.com',
           'description' => 'Nyoba aja',
-          'amount' => 10000
+          'amount' => 10000,
+          'should_send_email' => true
       ];
 
       $createInvoice = \Xendit\Invoice::create($params);
