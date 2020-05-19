@@ -93,7 +93,7 @@ class AuthController extends Controller
     public function register(Request $request){
         $this->validate($request,[
             'email' => 'required|unique:user|max:25',
-            'password' => 'required|min:6'
+            'password' => 'required|min:8'
         ]);
 
         $email = $request->input('email');

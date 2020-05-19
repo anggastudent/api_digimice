@@ -18,13 +18,16 @@ class SessionController extends Controller
     }
 
     public function index($id){
-        $session = Session::where('event_id',$id)->get();
+        $session = Session::where('event_id',$id)->orderBy('start','ASC')->get();
+
         $array = [];
         foreach ($session as $value) {
+            $agenda = EventAgenda::where('event_session_id',$value->id)->orderBy('start','ASC')->get();
             $array[] = [
                 'id' => $value->id,
                 'name' => $value->name,
-                'agenda' => $value->agenda
+                'start' => $value->start,
+                'agenda' => $agenda
             ];
         }
         

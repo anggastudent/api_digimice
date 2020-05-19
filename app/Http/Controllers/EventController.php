@@ -330,7 +330,7 @@ class EventController extends Controller
                 'max_participant' => $value->paket->max_participant,
                 'expired' => $getInvoice['expiry_date'],
                 'url' => $getInvoice['invoice_url'],
-                'bank' => $getInvoice['available_banks']
+                
                 
             ];
         }
