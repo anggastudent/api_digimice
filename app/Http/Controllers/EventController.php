@@ -111,6 +111,7 @@ class EventController extends Controller
         $team_role = $request->input('team_role');
         $name_team = $request->input('name_team');
         $email = $request->input('email');
+        $start_session = $request->input('start_session');
 
         if(trim($banner) == ''){
             $file = "upload/images/blank.jpg";
@@ -182,6 +183,7 @@ class EventController extends Controller
         
         Session::create([
             'name' => $name_session,
+            'start' => $start_session,
             'event_event_type_id' => $event_type_id,
             'event_id' => $event->id
         ]);
