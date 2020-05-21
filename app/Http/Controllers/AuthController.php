@@ -92,7 +92,7 @@ class AuthController extends Controller
     //Fungsi Register
     public function register(Request $request){
         $this->validate($request,[
-            'email' => 'required|unique:user|max:25',
+            'email' => 'required|unique:user',
             'password' => 'required|min:8'
         ]);
 

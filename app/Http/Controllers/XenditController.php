@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 require '../vendor/autoload.php';
 use Xendit\Xendit;
 use App\EventOrderHistory;
+use App\ParticipantOrderHistory;
 use App\Participant;
 use App\Event;
 use App\Team;
@@ -160,6 +161,17 @@ class XenditController extends Controller
             if($status == "PAID"){
               $event->update(['event_status' => "true"]);
             }
+
+          }
+
+          if($participant_order_history = ParticipantOrderHistory::where('id_invoice',$invoice_id)->first()){
+
+              $participant_order_history->update(['status' => $status]);
+              $participant = Participant::where('user_id',$participant_order_history->participant_user_id)->where('event_id',$participant_order_history->participant_event_id)->first();
+
+              if($status == "PAID"){
+                $participant->update(['payment_status' => "Lunas"]);
+              }
 
           }
           

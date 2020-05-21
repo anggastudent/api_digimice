@@ -8,6 +8,7 @@ use App\EventPresensi;
 use App\Participant;
 use App\Kabupaten;
 use App\Event;
+use App\ParticipantOrderHistory;
 use App\Session;
 use App\User;
 use Illuminate\Support\Facades\Hash;
@@ -41,35 +42,80 @@ class EventPresensiController extends Controller
 
         $event = Event::where('id',$event_id)->first();
         $session = Session::where('event_id',$event_id)->get('id');
+        $user = User::where('id',$user_id)->first();
+        
+        $cek_participant = Participant::where('user_id',$user_id)->where('event_id',$event_id)->first();
+        if($cek_participant){
+            return "Akun ini sudah terdaftar";
 
-        $data = [
-            'event_id' => $event_id,
-            'user_id' => $user_id,
-            'kit' => "Belum",
-            'register' => "Belum",
-            'payment' => $payment,
-            'payment_status' => $payment_status,
-            'participant_group_id' => $participant_group_id
-        ];
+        }else{
 
-        $participant = Participant::create($data);
-
-        $barcode = $this->getRandomString(8)."-MOB-";
-        foreach($session as $value){
-
-            $data2 = [
-                'barcode' => $barcode,
-                'status' => "Belum Hadir",
-                'participant_user_id' => $user_id,
-                'event_agenda_event_session_id' => $value->id,
-                'event_agenda_event_session_event_id' => $event_id,
-                'event_agenda_event_session_event_event_type_id' => "3"
+            $data = [
+                'event_id' => $event_id,
+                'user_id' => $user_id,
+                'kit' => "Belum",
+                'register' => "Belum",
+                'payment' => $payment,
+                'payment_status' => $payment_status,
+                'participant_group_id' => $participant_group_id
             ];
-            EventPresensi::create($data2);
-            
+
+            $participant = Participant::create($data);
+
+            $barcode = $this->getRandomString(8)."-MOB-";
+            foreach($session as $value){
+
+                $data2 = [
+                    'barcode' => $barcode,
+                    'status' => "Belum Hadir",
+                    'participant_user_id' => $user_id,
+                    'event_agenda_event_session_id' => $value->id,
+                    'event_agenda_event_session_event_id' => $event_id,
+                    'event_agenda_event_session_event_event_type_id' => "3"
+                ];
+                EventPresensi::create($data2);
+                
+            }
+
+
+            if(!$payment == 0){
+                Xendit::setApiKey(getenv('SECRET_API_KEY'));
+
+                $params = [
+                  'external_id' => $event->name,
+                  'payer_email' => $user->email,
+                  'description' => 'Pembuatan Invoice untuk pembelian tiket '.$event->name,
+                  'amount' => $payment,
+                  'should_send_email' => true
+                ];
+
+                $createInvoice = \Xendit\Invoice::create($params);
+
+                $data3 = [
+                    'status' => "PENDING",
+                    'participant_event_id' => $event_id,
+                    'participant_user_id' => $user_id,
+                    'id_invoice' => $createInvoice['id']
+                ];
+
+                ParticipantOrderHistory::create($data3);
+
+            }else{
+
+                $data3 = [
+                    'status' => "PAID",
+                    'participant_event_id' => $event_id,
+                    'participant_user_id' => $user_id,
+                    'id_invoice' => "no invoice"
+                ];
+
+                ParticipantOrderHistory::create($data3);
+            }
+
+            return "Berhasil tambah participant";
+
         }
 
-        return "Berhasil tambah participant";
     }
 
     public function setQrCode(Request $request){
