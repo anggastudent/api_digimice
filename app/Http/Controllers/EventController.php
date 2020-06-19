@@ -8,8 +8,8 @@ use Xendit\Xendit;
 use App\Event;
 use App\Team;
 use App\Session;
+use App\ParticipantOrderHistory;
 use App\EventOrderHistory;
-
 use Illuminate\Http\Request;
 
 class EventController extends Controller
@@ -408,6 +408,139 @@ class EventController extends Controller
                     'max_participant' => $value->paket->max_participant,
                     'paid_at' => $value->created_at,
                     'url' => ""
+                ];   
+            }
+            
+        }
+        return $array;
+    }
+
+    public function eventParticipant(){
+        $event = Event::where('event_status','true')->orderBy('start','DESC')->get();
+
+        $array = [];
+
+        foreach ($event as $value) {
+           $panitia = Team::where('event_id',$value->id)->first();
+           $array [] = [
+                'panitia' => $panitia->name_team,
+                'id' => $value->id,
+                'judul' => $value->name,
+                'start' => $value->start,
+                'end' => $value->end,
+                'banner' => $value->banner,
+                'ticket' => $value->event_ticket_price,
+                'event_type_id' => $value->event_type_id,
+                'desc' => $value->description,
+                'place' => $value->place,
+                'address' => $value->address,
+                'presence_type' => $value->presence_type
+           ];
+        }
+
+        return $array;
+    }
+
+    public function myEventParticipant($id){
+        $participant = ParticipantOrderHistory::where('participant_user_id',$id)->where('status',"PAID")->orderBy('id','DESC')->get();
+        
+        $array = [];
+
+        foreach ($participant as $value) {
+            $panitia = Team::where('event_id', $value->participant_event_id)->first();
+            $array [] = [
+                'panitia' => $panitia->name_team,
+                'id' => $value->event->id,
+                'judul' => $value->event->name,
+                'start' => $value->event->start,
+                'end' => $value->event->end,
+                'banner' => $value->event->banner,
+                'ticket' => $value->event->event_ticket_price,
+                'event_type_id' => $value->event->event_type_id,
+                'desc' => $value->event->description,
+                'place' => $value->event->place,
+                'address' => $value->event->address,
+                'presence_type' => $value->event->presence_type
+            ];
+                 
+        }
+        return $array;
+    }
+
+    public function orderTicketParticipantPending($id){
+
+        $order_ticket = ParticipantOrderHistory::where('participant_user_id',$id)->where('status',"PENDING")->orderBy('id','DESC')->get();
+        Xendit::setApiKey(getenv('SECRET_API_KEY'));
+        $array = [];
+        foreach ($order_ticket as $value) {
+
+            $id = $value->id_invoice;
+            $getInvoice = \Xendit\Invoice::retrieve($id);
+
+            $array[] = [
+                'id_invoice' => $value->id_invoice,
+                'name_event' => $value->event->name,
+                'price' => $value->event->event_ticket_price,
+                'date' => $getInvoice['expiry_date'],
+                'url' => $getInvoice['invoice_url'],
+                
+                
+            ];
+        }
+        return $array;
+
+    }
+
+    public function orderTicketParticipantExpired($id){
+        $order_ticket = ParticipantOrderHistory::where('participant_user_id',$id)->where('status',"EXPIRED")->orderBy('id','DESC')->get();
+        
+        Xendit::setApiKey(getenv('SECRET_API_KEY'));
+        $array = [];
+        foreach ($order_ticket as $value) {
+
+            $id = $value->id_invoice;
+            $getInvoice = \Xendit\Invoice::retrieve($id);
+
+            $array[] = [
+               'id_invoice' => $value->id_invoice,
+                'name_event' => $value->event->name,
+                'price' => $value->event->event_ticket_price,
+                'date' => $getInvoice['expiry_date'],
+                'url' => $getInvoice['invoice_url'],
+            ];
+        }
+        return $array;
+
+    }
+
+    public function orderTicketParticipantPaid($id){
+        $order_ticket = ParticipantOrderHistory::where('participant_user_id',$id)->where('status',"PAID")->orderBy('id','DESC')->get();
+        
+        Xendit::setApiKey(getenv('SECRET_API_KEY'));
+        $array = [];
+        foreach ($order_ticket as $value) {
+
+            $id = $value->id_invoice;
+            
+            if($id != "no invoice"){
+                $getInvoice = \Xendit\Invoice::retrieve($id);
+
+                $array[] = [
+                    
+                    'id_invoice' => $value->id_invoice,
+                    'name_event' => $value->event->name,
+                    'price' => $value->event->event_ticket_price,
+                    'date' => $getInvoice['paid_at'],
+                    'url' => $getInvoice['invoice_url'],
+                ];
+            }else{
+                $array[] = [
+                        
+                    'id_invoice' => $value->id_invoice,
+                    'name_event' => $value->event->name,
+                    'price' => $value->event->event_ticket_price,
+                    'date' => $value->paid_at,
+                    'url' => "",
                 ];   
             }
             

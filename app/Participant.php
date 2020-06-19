@@ -19,5 +19,8 @@ class Participant extends Model implements AuthenticatableContract, Authorizable
         'participant_group_id'
     ];
 
+    public function event(){
+    	return $this->belongsTo('App\Event','event_id','id');
+    }
    
 }

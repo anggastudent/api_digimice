@@ -208,13 +208,13 @@ class EventPresensiController extends Controller
         
         foreach ($presensi as $value) {
             $kabupaten = Kabupaten::findOrFail($value->user->regencies_id);
-
+            $participant = Participant::where('user_id',$value->participant_user_id)->where('event_id',$event_id)->first();
             $array[] = [
                 'name' => $value->user->name,
                 'email' => $value->user->email,
                 'phone' => $value->user->phone,
                 'rekap' => $value->status,
-                'payment_status' => $value->participant->payment_status,
+                'payment_status' => $participant->payment_status,
                 'provinsi' => $kabupaten->provinsi->name
             ];
         }

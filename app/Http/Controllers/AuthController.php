@@ -19,7 +19,7 @@ class AuthController extends Controller
         //
     }
   
-    //Fungsi Login
+    //Fungsi Login Panitia
     public function login(Request $request){
         
         $this->validate($request,[
@@ -43,15 +43,16 @@ class AuthController extends Controller
             ];
             return response()->json($pesan,$pesan['code']);
 
-        }else if(!$user){
-            $pesan = [
-                'message' => 'login peserta gagal',
-                'code' => 401,
-                'result' => [
-                    'token' => 'null',
-                ]
-            ];
         }
+        // else if(!$user){
+        //     $pesan = [
+        //         'message' => 'login peserta gagal',
+        //         'code' => 401,
+        //         'result' => [
+        //             'token' => 'null',
+        //         ]
+        //     ];
+        // }
 
         if(Hash::check($password,$user->password_hash)){
             $newToken = $this->getRandomString();
@@ -87,6 +88,64 @@ class AuthController extends Controller
 
         return response()->json($pesan,$pesan['code']);
             
+    }
+
+    public function loginParticipant(Request $request){
+        
+        $this->validate($request,[
+            'email' => 'required',
+            'password' => 'required'
+        ]);
+
+        $email = $request->input('email');
+        $password = $request->input('password');
+
+        $user = User::where('email',$email)->where('role','participant')->first();
+
+        if(!$user){
+
+            $pesan = [
+                'message' => 'login peserta gagal',
+                'code' => 401,
+                'result' => [
+                    'token' => 'null'
+                ]
+            ];
+            return response()->json($pesan,$pesan['code']);
+        }
+
+        if(Hash::check($password, $user->password_hash)){
+
+            $newToken = $this->getRandomString();
+            $user->update(['auth_key' => $newToken]);
+
+            $result = [
+
+                'result' => [
+
+                    'token' => $newToken,
+                    'user_id' => $user->id,
+                    'email' => $user->email,
+                    'name' => $user->name,
+                    'role' => $user->role,
+                    'phone' => $user->phone,
+                    'avatar' => $user->avatar,
+                    'regencies_id' => $user->regencies_id
+                ]
+                
+            ];
+
+            return response()->json($result);
+        }else{
+            $pesan = [
+                'message' => 'Password tidak valid',
+                'code' => 401,
+                'result' => [
+                    'token' => 'null'
+                ]
+            ];
+            return response()->json($pesan,$pesan['code']);
+        }
     }
 
     //Fungsi Register

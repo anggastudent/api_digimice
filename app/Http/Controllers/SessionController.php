@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 use App\Session;
 use App\EventAgenda;
+use App\EventPresensi;
 use App\Materi;
 use Illuminate\Http\Request;
 class SessionController extends Controller
@@ -18,15 +19,26 @@ class SessionController extends Controller
     }
 
     public function index($id){
+        
         $session = Session::where('event_id',$id)->orderBy('start','ASC')->get();
 
         $array = [];
+        $qr_code = "";
+
         foreach ($session as $value) {
             $agenda = EventAgenda::where('event_session_id',$value->id)->orderBy('start','ASC')->get();
+            $presensi = EventPresensi::where('event_agenda_event_session_id',$value->id)->where('event_agenda_event_session_event_id',$value->event_id)->first();
+            
+            if($presensi){
+                $qr_code = $presensi->barcode;
+
+            }
+
             $array[] = [
                 'id' => $value->id,
                 'name' => $value->name,
                 'start' => $value->start,
+                'qr_code' => $qr_code,
                 'agenda' => $agenda
             ];
         }
