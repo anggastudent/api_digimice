@@ -63,6 +63,7 @@ class EventPresensiController extends Controller
             $participant = Participant::create($data);
 
             $barcode = $this->getRandomString(8)."-MOB-";
+            
             foreach($session as $value){
 
                 $data2 = [
@@ -127,7 +128,7 @@ class EventPresensiController extends Controller
 
         $session = Session::where('event_id',$event_id)->get('id');
 
-        $user = User::where('email',$email)->first();
+        $user = User::where('email',$email)->where('role',"participant")->first();
 
         if($user){
 
@@ -139,28 +140,39 @@ class EventPresensiController extends Controller
             }
 
             foreach ($session as $value) {
-                $presensi = EventPresensi::where('participant_user_id', $user_id)->where('event_agenda_event_session_id',$value->id)->first();
-
-                $data = [
+                if($presensi = EventPresensi::where('participant_user_id', $user_id)->where('event_agenda_event_session_id',$value->id)->first()){
+                    $data = [
                     'barcode' => $kode_qr
                 ];
 
-                $presensi->update($data);
+                    $presensi->update($data);
+                }else{
+                    return "Email belum mendaftar event";
+                }
+                
+
+                
             }
 
 
             $absen = EventPresensi::where('participant_user_id',$user_id)->where('event_agenda_event_session_id',$session_id);
-
-            $data2 = [
-                'status' => "Hadir"
-            ];
-            
-            $absen->update($data2);
+            if($absen){
+                 $data2 = [
+                    'status' => "Hadir"
+                ];
+                
+                $absen->update($data2);
 
             return "Berhasil set Email $email QR Code $kode_qr";
+        }else{
+            return "Email belum mendaftar event";
+
+        }
+
+           
         }
         else{
-            return "Email belum terdaftar";
+            return "Email belum terdaftar sebagai peserta";
         }
         
 

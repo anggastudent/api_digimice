@@ -21,5 +21,9 @@ class EventAgenda extends Model implements AuthenticatableContract, Authorizable
     public function session(){
     	return $this->belongsTo('App\Session','event_session_id','id');
     }
+
+    public function event(){
+    	return $this->belongsTo('App\Event', 'event_session_event_id', 'id');
+    }
    
 }

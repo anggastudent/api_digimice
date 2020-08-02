@@ -30,31 +30,48 @@ class AuthController extends Controller
         $email = $request->input('email');
         $password = $request->input('password');
 
-        $user = User::where('email',$email)->first();
-        $team = Team::where('user_id',$user->id)->first();
+        if($user = User::where('email',$email)->where('role','lead eo')->first()){
+            
+            if(Hash::check($password,$user->password_hash)){
 
-        if(!$user && !$team){
-            $pesan = [
-                'message' => 'login panitia gagal',
-                'code' => 401,
-                'result' => [
-                    'token' => 'null',
-                ]
-            ];
+                $newToken = $this->getRandomString();
+
+                $user->update([
+                    'auth_key' => $newToken
+                ]);
+
+                $pesan = [
+                    'message' => 'login success',
+                    'code' => 200,
+                    'result' => [
+                        'token' => $newToken,
+                        'role' => $user->role,
+                        'user_id' => $user->id,
+                        'email' => $user->email,
+                        'name' => $user->name
+                    ]
+                ];
+
+            }else{
+
+                $pesan = [
+                    'message' => 'login failed wrong password',
+                    'code' => 401,
+                    'result' => [
+                        'token' => null,
+                    ]
+                ];
+
+            }
+
             return response()->json($pesan,$pesan['code']);
-
+            
         }
-        // else if(!$user){
-        //     $pesan = [
-        //         'message' => 'login peserta gagal',
-        //         'code' => 401,
-        //         'result' => [
-        //             'token' => 'null',
-        //         ]
-        //     ];
-        // }
+        
+        if($user = User::where('email',$email)->where('role','eo')->first()){
+            
+            if(Hash::check($password,$user->password_hash)){
 
-        if(Hash::check($password,$user->password_hash)){
             $newToken = $this->getRandomString();
 
             $user->update([
@@ -66,11 +83,10 @@ class AuthController extends Controller
                 'code' => 200,
                 'result' => [
                     'token' => $newToken,
-                    'role_team' => $team->team_role ?? 'tidak ada',
-                    'user_id' => $team->user_id,
+                    'role' => $user->role,
+                    'user_id' => $user->id,
                     'email' => $user->email,
-                    'name' => $user->name,
-                    'name_team' => $team->name_team
+                    'name' => $user->name
                 ]
             ];
 
@@ -87,6 +103,17 @@ class AuthController extends Controller
         }
 
         return response()->json($pesan,$pesan['code']);
+        }
+
+        $pesan = [
+                'message' => 'login panitia gagal',
+                'code' => 401,
+                'result' => [
+                    'token' => 'null',
+                ]
+            ];
+        return response()->json($pesan,$pesan['code']);
+        
             
     }
 
@@ -101,55 +128,152 @@ class AuthController extends Controller
         $password = $request->input('password');
 
         $user = User::where('email',$email)->where('role','participant')->first();
+        if($user){
+            if(!$user){
 
-        if(!$user){
+                $pesan = [
+                    'message' => 'login peserta gagal',
+                    'code' => 401,
+                    'result' => [
+                        'token' => 'null'
+                    ]
+                ];
+                return response()->json($pesan,$pesan['code']);
+            }
 
-            $pesan = [
-                'message' => 'login peserta gagal',
-                'code' => 401,
-                'result' => [
-                    'token' => 'null'
-                ]
-            ];
-            return response()->json($pesan,$pesan['code']);
+            if(Hash::check($password, $user->password_hash)){
+
+                $newToken = $this->getRandomString();
+                $user->update(['auth_key' => $newToken]);
+
+                $result = [
+
+                    'result' => [
+
+                        'token' => $newToken,
+                        'user_id' => $user->id,
+                        'email' => $user->email,
+                        'name' => $user->name,
+                        'role' => $user->role,
+                        'phone' => $user->phone,
+                        'avatar' => $user->avatar,
+                        'regencies_id' => $user->regencies_id
+                    ]
+                    
+                ];
+
+                return response()->json($result);
+            }else{
+                $pesan = [
+                    'message' => 'Password tidak valid',
+                    'code' => 401,
+                    'result' => [
+                        'token' => 'null'
+                    ]
+                ];
+                return response()->json($pesan,$pesan['code']);
+            }
         }
 
-        if(Hash::check($password, $user->password_hash)){
+        $user_pemateri = User::where('email',$email)->where('role','speaker')->first();
+        if($user_pemateri){
 
-            $newToken = $this->getRandomString();
-            $user->update(['auth_key' => $newToken]);
 
-            $result = [
+            if(!$user_pemateri){
 
-                'result' => [
+                $pesan = [
+                    'message' => 'login pemateri gagal',
+                    'code' => 401,
+                    'result' => [
+                        'token' => 'null'
+                    ]
+                ];
+                return response()->json($pesan,$pesan['code']);
+            }
 
-                    'token' => $newToken,
-                    'user_id' => $user->id,
-                    'email' => $user->email,
-                    'name' => $user->name,
-                    'role' => $user->role,
-                    'phone' => $user->phone,
-                    'avatar' => $user->avatar,
-                    'regencies_id' => $user->regencies_id
-                ]
-                
-            ];
+            if(Hash::check($password, $user_pemateri->password_hash)){
 
-            return response()->json($result);
-        }else{
-            $pesan = [
-                'message' => 'Password tidak valid',
-                'code' => 401,
-                'result' => [
-                    'token' => 'null'
-                ]
-            ];
-            return response()->json($pesan,$pesan['code']);
+                $newToken = $this->getRandomString();
+                $user_pemateri->update(['auth_key' => $newToken]);
+
+                $result = [
+
+                    'result' => [
+
+                        'token' => $newToken,
+                        'user_id' => $user_pemateri->id,
+                        'email' => $user_pemateri->email,
+                        'name' => $user_pemateri->name,
+                        'role' => $user_pemateri->role,
+                        'phone' => $user_pemateri->phone,
+                        'avatar' => $user_pemateri->avatar,
+                        'regencies_id' => $user_pemateri->regencies_id
+                    ]
+                    
+                ];
+
+                return response()->json($result);
+            }else{
+                $pesan = [
+                    'message' => 'Password tidak valid',
+                    'code' => 401,
+                    'result' => [
+                        'token' => 'null'
+                    ]
+                ];
+                return response()->json($pesan,$pesan['code']);
+            }
         }
+
+        
     }
 
-    //Fungsi Register
+   
+
+    //Fungsi Register participant
     public function register(Request $request){
+        $this->validate($request,[
+            'email' => 'required|unique:user',
+            'password' => 'required|min:8'
+        ]);
+
+        $email = $request->input('email');
+        $password = $request->input('password');
+        $name = $request->input('name');
+        $phone = $request->input('phone');
+        $role = $request->input('role');
+        $regencies_id = $request->input('regencies_id');
+
+        $hasPassword = Hash::make($password);
+
+        $data = [
+            'email' => $email,
+            'password_hash' => $hasPassword,
+            'name' => $name,
+            'role' => $role,
+            'phone' => $phone,
+            'regencies_id' => $regencies_id,
+            'avatar' => "upload/images/blank.jpg"
+        ];
+
+        if(User::create($data)){
+            $pesan = [
+                'message' => 'register success',
+                'code' => 201
+            ];
+        }else{
+            $pesan = [
+                'message' => 'register gagal',
+                'code' => 404
+            ];
+        }
+
+        return response()->json($pesan,$pesan['code']);
+
+    }
+
+    //Fungsi Register participant
+    public function registerPanitia(Request $request){
         $this->validate($request,[
             'email' => 'required|unique:user',
             'password' => 'required|min:8'
@@ -167,7 +291,7 @@ class AuthController extends Controller
             'email' => $email,
             'password_hash' => $hasPassword,
             'name' => $name,
-            'role' => "participant",
+            'role' => "lead eo",
             'phone' => $phone,
             'regencies_id' => $regencies_id,
             'avatar' => "upload/images/blank.jpg"

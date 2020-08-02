@@ -10,6 +10,9 @@ use App\Team;
 use App\Session;
 use App\ParticipantOrderHistory;
 use App\EventOrderHistory;
+use App\Refund;
+use App\Speaker;
+use App\Participant;
 use Illuminate\Http\Request;
 
 class EventController extends Controller
@@ -193,7 +196,7 @@ class EventController extends Controller
             $params = [
               'external_id' => $name_packet,
               'payer_email' => $email,
-              'description' => 'Pembuatan Invoice untuk pembelian '.$name_packet,
+              'description' => 'Pembuatan Invoice untuk pembelian '.$name_packet.' '.$name,
               'amount' => $price_packet,
               'should_send_email' => true
             ];
@@ -225,9 +228,14 @@ class EventController extends Controller
 
     }
 
-    public function edit($id){
-        $event = Event::findOrFail($id);
-        
+    public function edit(Request $request){
+
+        $user_id = $request->input('user_id');
+        $event_id = $request->input('event_id');
+
+        $event = Event::findOrFail($event_id);
+        $team = Team::where('user_id', $user_id)->where('event_id',$event_id)->first();
+
         $array[] = [
             'name' => $event->name,
             'description' => $event->description,
@@ -237,7 +245,8 @@ class EventController extends Controller
             'banner' => $event->banner,
             'end' => $event->end,
             'price' => $event->paket->price,
-            'ticket' => $event->event_ticket_price
+            'ticket' => $event->event_ticket_price,
+            'panitia' => $team->name_team
             
         ];
         
@@ -249,6 +258,9 @@ class EventController extends Controller
 
         $event = Event::findOrFail($id);
 
+        $user_id = $request->input('user_id');
+        $team = Team::where('event_id',$event->id)->where('user_id',$user_id)->first();
+
         $name = $request->input('name');
         $description = $request->input('description');
         $place = $request->input('place');
@@ -257,6 +269,7 @@ class EventController extends Controller
         $end = $request->input('end');
         $banner = $request->input('banner');
         $event_ticket_price = $request->input('event_ticket_price');
+        $panitia = $request->input('panitia');
 
         
         if(trim($banner == '')){
@@ -272,7 +285,10 @@ class EventController extends Controller
 
             ];
 
+
             $event->update($data);
+
+            $team->update(['name_team' => $panitia]);
             
         }else{
             $target_dir = "upload/images";
@@ -307,6 +323,8 @@ class EventController extends Controller
             ];
 
             $event->update($data);
+            $team->update(['name_team' => $panitia]);
+
         }
         
 
@@ -422,6 +440,7 @@ class EventController extends Controller
 
         foreach ($event as $value) {
            $panitia = Team::where('event_id',$value->id)->first();
+           $count_participant = Participant::where('event_id',$value->id)->count();
            $array [] = [
                 'panitia' => $panitia->name_team,
                 'id' => $value->id,
@@ -434,12 +453,50 @@ class EventController extends Controller
                 'desc' => $value->description,
                 'place' => $value->place,
                 'address' => $value->address,
-                'presence_type' => $value->presence_type
+                'presence_type' => $value->presence_type,
+                'max_participant' => $value->paket->max_participant,
+                'participant' => $count_participant
            ];
         }
 
         return $array;
     }
+
+    public function searchEventParticipant(Request $request){
+            $search = $request->input('search');
+            $event = Event::where('event_status','true')->orderBy('start','DESC')->get();
+
+            $array = [];
+
+            foreach ($event as $value) {
+                $mysearch = strtolower($search);
+                $data = strtolower($value->name);
+
+                $proses_search = strchr($data, $mysearch);
+
+                if($proses_search) {
+                     $panitia = Team::where('event_id',$value->id)->first();
+                     $array [] = [
+                        'panitia' => $panitia->name_team,
+                        'id' => $value->id,
+                        'judul' => $value->name,
+                        'start' => $value->start,
+                        'end' => $value->end,
+                        'banner' => $value->banner,
+                        'ticket' => $value->event_ticket_price,
+                        'event_type_id' => $value->event_type_id,
+                        'desc' => $value->description,
+                        'place' => $value->place,
+                        'address' => $value->address,
+                        'presence_type' => $value->presence_type
+                    ];
+
+                }
+            }
+            return $array;
+
+    }
+
 
     public function myEventParticipant($id){
         $participant = ParticipantOrderHistory::where('participant_user_id',$id)->where('status',"PAID")->orderBy('id','DESC')->get();
@@ -529,6 +586,7 @@ class EventController extends Controller
                     
                     'id_invoice' => $value->id_invoice,
                     'name_event' => $value->event->name,
+                    'event_id' => $value->participant_event_id,
                     'price' => $value->event->event_ticket_price,
                     'date' => $getInvoice['paid_at'],
                     'url' => $getInvoice['invoice_url'],
@@ -545,6 +603,99 @@ class EventController extends Controller
             }
             
         }
+        return $array;
+    }
+
+    public function refund(Request $request){
+        $amount = $request->input('amount');
+        $bank_code = $request->input('bank_code');
+        $bank_account = $request->input('bank_account');
+        $name = $request->input('name');
+        $email = $request->input('email');
+        $name_event = $request->input('name_event');
+        $user_id = $request->input('user_id');
+        $event_id = $request->input('event_id');
+
+        Xendit::setApiKey(getenv('SECRET_API_KEY'));
+
+        $params = [
+          'external_id' => 'pengembalian-'.time(),
+          'amount' => $amount,
+          'bank_code' => $bank_code,
+          'account_holder_name' => $name,
+          'account_number' => $bank_account,
+          'description' => 'Pengembalian Dana Tiket '.$name_event,
+          'email_to' => [$email],
+          'X-IDEMPOTENCY-KEY'
+        ];
+      $createDisbursements = \Xendit\Disbursements::create($params);
+
+      $data = [
+        'status' => "Pending",
+        'id_disbursement' => $createDisbursements['id'],
+        'participant_user_id' => $user_id,
+        'participant_event_id' => $event_id,
+
+      ];
+      Refund::create($data);
+
+      return $createDisbursements;
+    }
+
+    public function eventSpeaker(Request $request){
+        $user_id = $request->input('user_id');
+        $pemateri = Speaker::where('user_id', $user_id)->orderBy('id','DESC')->get();
+        
+        $array = [];
+
+        foreach ($pemateri as $value) {
+            $panitia = Team::where('event_id', $value->event_id)->first();
+
+            if($value->event->event_status == "true"){
+                $array[] = [
+                    'panitia' => $panitia->name_team,
+                    'id' => $value->event->id,
+                    'judul' => $value->event->name,
+                    'start' => $value->event->start,
+                    'end' => $value->event->end,
+                    'banner' => $value->event->banner,
+                    'ticket' => $value->event->event_ticket_price,
+                    'event_type_id' => $value->event->event_type_id,
+                    'desc' => $value->event->description,
+                    'place' => $value->event->place,
+                    'address' => $value->event->address,
+                    'presence_type' => $value->event->presence_type
+                
+                ];
+            }
+            
+        }
+        
+        
+        return  response()->json($array);
+    }
+
+    public function refundList($id){
+
+        Xendit::setApiKey(getenv('SECRET_API_KEY'));
+
+        $refund = Refund::where('participant_user_id',$id)->orderBy('id','DESC')->get();
+
+        $array = [];
+
+        foreach ($refund as $value) {
+            $id = $value->id_disbursement;
+            $getDisbursements = \Xendit\Disbursements::retrieve($id);
+            $array [] = [
+
+                'id_disbursement' => $id,
+                'name_event' => $value->eventRefund->name ?? "Tidak ada",
+                'amount' => $getDisbursements['amount'],
+                'status' => $value->status,
+                'date' => $value->created_at
+            ];
+        }
+
         return $array;
     }
 }

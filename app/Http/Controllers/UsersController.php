@@ -23,14 +23,13 @@ class UsersController extends Controller
 
     //Fungsi Index
     public function index($id){
-        $team = Team::where('user_id',$id)->first();
+        $user = User::where('id',$id)->first();
 
         $array [] = [
-            'name' => $team->user->name,
-            'email' => $team->user->email,
-            'team' => $team->name_team,
-            'role' => $team->team_role,
-            'avatar' => $team->user->avatar
+            'name' => $user->name,
+            'email' => $user->email,
+            'role' => $user->role,
+            'avatar' => $user->avatar
         ];
         return response($array);
 
@@ -87,7 +86,8 @@ class UsersController extends Controller
             'password_hash' => $password_hash,
             'phone' => $no_telp,
             'role' => "speaker",
-            'regencies_id' => $regencies_id
+            'regencies_id' => $regencies_id,
+            'avatar' => "upload/images/blank.jpg"
         ];
 
         if($user = User::where('email',$email)->first()){
@@ -214,6 +214,28 @@ class UsersController extends Controller
 
         $user->update($data);
         return "berhasil";
+
+    }
+
+    public function gabungPemateri(Request $request){
+
+        $user_id = $request->input('user_id');
+        $event_id = $request->input('event_id');
+
+        if($pemateri = Pemateri::where('user_id',$user_id)->where('event_id',$event_id)->first()){
+            return "Pemateri sudah tergabung";
+        }else{
+            $data2 = [
+                'user_id' => $user_id,
+                'event_id' => $event_id
+            ];
+
+            Pemateri::create($data2);
+
+            return "Pemateri berhasil bergabung";
+        }
+
+        
 
     }
 }

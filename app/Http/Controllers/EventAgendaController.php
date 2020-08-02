@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 use App\EventAgenda;
+use App\ParticipantOrderHistory;
 use App\Materi;
+use App\Team;
 
 class EventAgendaController extends Controller
 {
@@ -108,6 +110,40 @@ class EventAgendaController extends Controller
         $agenda->delete();
 
         return "Berhasih hapus"; 
+    }
+
+     public function alarmAgenda(Request $request){
+        $user_id = $request->input('user_id');
+        $participant = ParticipantOrderHistory::where('participant_user_id',$user_id)->where('status',"PAID")->get();
+        
+
+        $array = [];
+       
+        foreach ($participant as $value) {
+            $agenda = EventAgenda::where('event_session_event_id', $value->participant_event_id)->get();
+            
+            foreach ($agenda as $v) {
+
+                $panitia = Team::where('event_id', $v->event_session_event_id)->first();
+
+                 $array[] = [
+                        'event' => $v->event->name,
+                        'start' => $v->start,
+                        'name' => $v->name,
+                        'event_id' => $v->event_session_event_id,
+                        'banner' => $v->event->banner,
+                        'presence_type' => $v->event->presence_type,
+                        'ticket' => $v->event->event_ticket_price,
+                        'address' => $v->event->address,
+                        'place' => $v->event->place,
+                        'panitia' => $panitia->name_team,
+                        'desc' => $v->event->description
+
+                ];
+            }
+
+        }
+        return response()->json($array);
     }
 
     //

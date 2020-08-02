@@ -8,8 +8,11 @@ use App\EventOrderHistory;
 use App\ParticipantOrderHistory;
 use App\Participant;
 use App\Event;
+use App\Session;
+use App\EventPresensi;
 use App\Team;
 use App\User;
+use App\Refund;
 use Illuminate\Http\Request;
 
 
@@ -97,11 +100,12 @@ class XenditController extends Controller
 
       $params = [
           'external_id' => 'disb-12345678',
-          'amount' => 15000,
-          'bank_code' => 'BCA',
-          'account_holder_name' => 'Joe',
-          'account_number' => '1234567890',
+          'amount' => 90000,
+          'bank_code' => 'MANDIRI',
+          'account_holder_name' => 'Rizky',
+          'account_number' => '7654321',
           'description' => 'Disbursement from Example',
+          'email_to' => ['a123aku@gmail.com'],
           'X-IDEMPOTENCY-KEY'
       ];
       $createDisbursements = \Xendit\Disbursements::create($params);
@@ -126,8 +130,13 @@ class XenditController extends Controller
       // return $array;
     }
 
+    public function getBank(){
+      $getDisbursementsBanks = \Xendit\Disbursements::getAvailableBanks();
+      return $getDisbursementsBanks;
+    }
+
     public function getDisbursement(){
-      $id = "5ea459c379037e0016e7e535";
+      $id = "5f126ae11c2bf00017214fc3";
       $getDisbursements = \Xendit\Disbursements::retrieve($id);
       return $getDisbursements;
       
@@ -184,7 +193,35 @@ class XenditController extends Controller
      public function callbackDisbursement($id){
        if ($_SERVER["REQUEST_METHOD"] === "POST" && "d03c8015b391f898985d59818b68971f3d3d8b7eb8a15cd7ba3715e17e6ce52b" == $id) {
           $data = file_get_contents("php://input");
-          $parse = json_decode($data); 
+          $parse = json_decode($data);
+          $id_disbursement = $parse->id;
+          $status = $parse->status;
+
+          $refund = Refund::where('id_disbursement',$id_disbursement)->first();
+          if($refund){
+            $refund->update(['status' => $status]);
+
+            $participant = Participant::where('user_id',$refund->participant_user_id)->where('event_id',$refund->participant_event_id)->first();
+
+            $order_participant = ParticipantOrderHistory::where('participant_user_id',$refund->participant_user_id)->where('participant_event_id', $refund->participant_event_id)->first();
+
+            $session = Session::where('event_id',$refund->participant_event_id)->get('id');
+
+              if($status == "COMPLETED"){
+                // $participant->update(['payment_status' => "Belum Lunas"]);
+                // $order_participant->update(['status' => "Refund"]);
+                $participant->delete();
+                $order_participant->delete();
+
+                foreach($session as $value){
+                  
+                  $presensi = EventPresensi::where('participant_user_id',$refund->participant_user_id)->where('event_agenda_event_session_event_id', $refund->participant_event_id)->where('event_agenda_event_session_id', $value->id)->first();
+                  
+                  $presensi->delete();
+                
+                }
+              }
+          } 
           
 
       } else {

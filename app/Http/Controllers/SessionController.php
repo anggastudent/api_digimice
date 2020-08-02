@@ -55,7 +55,7 @@ class SessionController extends Controller
             $array[] = [
                 'id' => $value->id,
                 'name' => $value->name,
-                'agenda' => $value->agenda
+                'start' => $value->start,
             ];
         }
         
