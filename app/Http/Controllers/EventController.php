@@ -24,13 +24,14 @@ class EventController extends Controller
      */
     public function __construct()
     {
-       
+       $this->middleware("login");
 
     }
     
     //
 
     public function index(Request $request){
+        
         $user_id = $request->input('user_id');
         $team = Team::where('user_id', $user_id)->orderBy('id','DESC')->get();
         

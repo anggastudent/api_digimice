@@ -17,7 +17,7 @@ class LoginMiddleware
     public function handle($request, Closure $next)
     {
         if($request->input('token')){
-            $check = User::where('remember_token', $request->input('token'))->first();
+            $check = User::where('auth_key', $request->input('token'))->first();
             if(!$check){
                 return response('Token tidak valid',401);
             }else{

@@ -18,7 +18,7 @@ class UsersController extends Controller
     public function __construct()
     {
         //
-        // $this->middleware("login");
+        $this->middleware("login");
     }
 
     //Fungsi Index
@@ -59,6 +59,7 @@ class UsersController extends Controller
                 ];
 
                 Team::create($data);
+                $user->update(['role' => "eo"]);
                 return "berhasil";
             }
             
@@ -108,18 +109,6 @@ class UsersController extends Controller
 
     }
 
-    public function provinsi(){
-        $provinsi = Provinsi::all();
-        $array = [];
-        foreach ($provinsi as $value) {
-            $array [] = [
-                'id' => $value->id,
-                'name' => $value->name,
-                'kabupaten' => $value->kabupaten
-            ];
-        }
-        return response($array);
-    }
 
     public function edit($id){
         $user = User::findOrFail($id);

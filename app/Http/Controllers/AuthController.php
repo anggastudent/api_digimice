@@ -5,6 +5,7 @@ use App\User;
 use App\Team;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
+use App\Provinsi;
 
 
 class AuthController extends Controller
@@ -228,7 +229,18 @@ class AuthController extends Controller
         
     }
 
-   
+    public function provinsi(){
+        $provinsi = Provinsi::all();
+        $array = [];
+        foreach ($provinsi as $value) {
+            $array [] = [
+                'id' => $value->id,
+                'name' => $value->name,
+                'kabupaten' => $value->kabupaten
+            ];
+        }
+        return response($array);
+    }
 
     //Fungsi Register participant
     public function register(Request $request){
