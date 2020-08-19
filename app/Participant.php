@@ -22,5 +22,8 @@ class Participant extends Model implements AuthenticatableContract, Authorizable
     public function event(){
     	return $this->belongsTo('App\Event','event_id','id');
     }
-   
+   	
+   	public function user(){
+   		return $this->belonsTo('App\User','user_id','id');
+   	}
 }

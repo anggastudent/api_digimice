@@ -83,6 +83,7 @@ $app->routeMiddleware([
 $app->register(App\Providers\AppServiceProvider::class);
 $app->register(App\Providers\AuthServiceProvider::class);
 $app->register(Appzcoder\LumenRoutesList\RoutesCommandServiceProvider::class);
+$app->register(Illuminate\Mail\MailServiceProvider::class);
 
 // $app->register(App\Providers\EventServiceProvider::class);
 
@@ -102,5 +103,12 @@ $app->router->group([
 ], function ($router) {
     require __DIR__.'/../routes/web.php';
 });
+
+/* SETTING MAIL */
+
+$app->configure('mail');
+$app->alias('mailer',Illuminate\Mail\Mailer::class);
+$app->alias('mailer',Illuminate\Contracts\Mail\Mailer::class);
+$app->alias('mailer',Illuminate\Contracts\Mail\MailQueue::class);
 
 return $app;

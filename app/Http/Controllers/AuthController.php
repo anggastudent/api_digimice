@@ -6,6 +6,7 @@ use App\Team;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 use App\Provinsi;
+use Illuminate\Support\Facades\Mail;
 
 
 class AuthController extends Controller
@@ -31,7 +32,7 @@ class AuthController extends Controller
         $email = $request->input('email');
         $password = $request->input('password');
 
-        if($user = User::where('email',$email)->where('role','lead eo')->first()){
+        if($user = User::where('email',$email)->where('role','lead eo')->where('status','activated')->first()){
             
             if(Hash::check($password,$user->password_hash)){
 
@@ -69,7 +70,7 @@ class AuthController extends Controller
             
         }
         
-        if($user = User::where('email',$email)->where('role','eo')->first()){
+        if($user = User::where('email',$email)->where('role','eo')->where('status','activated')->first()){
             
             if(Hash::check($password,$user->password_hash)){
 
@@ -128,7 +129,7 @@ class AuthController extends Controller
         $email = $request->input('email');
         $password = $request->input('password');
 
-        $user = User::where('email',$email)->where('role','participant')->first();
+        $user = User::where('email',$email)->where('role','participant')->where('status','activated')->first();
         if($user){
             if(!$user){
 
@@ -160,7 +161,7 @@ class AuthController extends Controller
                         'avatar' => $user->avatar,
                         'regencies_id' => $user->regencies_id
                     ]
-                    
+                   
                 ];
 
                 return response()->json($result);
@@ -176,7 +177,7 @@ class AuthController extends Controller
             }
         }
 
-        $user_pemateri = User::where('email',$email)->where('role','speaker')->first();
+        $user_pemateri = User::where('email',$email)->where('role','speaker')->where('status','activated')->first();
         if($user_pemateri){
 
 
@@ -253,22 +254,36 @@ class AuthController extends Controller
         $password = $request->input('password');
         $name = $request->input('name');
         $phone = $request->input('phone');
-        $role = $request->input('role');
         $regencies_id = $request->input('regencies_id');
 
         $hasPassword = Hash::make($password);
-
+        $token = $this->getRandomString();
         $data = [
             'email' => $email,
             'password_hash' => $hasPassword,
             'name' => $name,
-            'role' => $role,
+            'role' => "participant",
             'phone' => $phone,
             'regencies_id' => $regencies_id,
-            'avatar' => "upload/images/blank.jpg"
+            'avatar' => "upload/images/blank.jpg",
+            'verification_token' => $token
         ];
 
         if(User::create($data)){
+
+            $link = getenv('APP_URL')."/aktivasi/$token";
+
+            $data = [
+                'name' => $name,
+                'body' => "Selamat akun anda berhasil dibuat silahkan melakukan aktivasi melalui link berikut ".$link
+            ];
+
+            Mail::send('email.mail', $data, function($message) use ($name, $email){
+
+                $message->to($email, $name)->subject('Pemberitahuan Akun');
+                $message->from('admin@apidigimice.me', 'digiMICE Panitia');
+            });
+
             $pesan = [
                 'message' => 'register success',
                 'code' => 201
@@ -284,7 +299,7 @@ class AuthController extends Controller
 
     }
 
-    //Fungsi Register participant
+    //Fungsi Register panitia
     public function registerPanitia(Request $request){
         $this->validate($request,[
             'email' => 'required|unique:user',
@@ -298,7 +313,7 @@ class AuthController extends Controller
         $regencies_id = $request->input('regencies_id');
 
         $hasPassword = Hash::make($password);
-
+        $token = $this->getRandomString();
         $data = [
             'email' => $email,
             'password_hash' => $hasPassword,
@@ -306,10 +321,25 @@ class AuthController extends Controller
             'role' => "lead eo",
             'phone' => $phone,
             'regencies_id' => $regencies_id,
-            'avatar' => "upload/images/blank.jpg"
+            'avatar' => "upload/images/blank.jpg",
+            'verification_token' => $token
         ];
 
         if(User::create($data)){
+
+            $link = getenv('APP_URL')."/aktivasi/$token";
+
+            $data = [
+                'name' => $name,
+                'body' => "Selamat akun anda berhasil dibuat silahkan melakukan aktivasi melalui link berikut ".$link
+            ];
+
+            Mail::send('email.mail', $data, function($message) use ($name, $email){
+
+                $message->to($email, $name)->subject('Pemberitahuan Akun');
+                $message->from('admin@apidigimice.me', 'digiMICE Panitia');
+            });
+
             $pesan = [
                 'message' => 'register success',
                 'code' => 201

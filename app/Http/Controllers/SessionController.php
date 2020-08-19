@@ -40,7 +40,7 @@ class SessionController extends Controller
                 'id' => $value->id,
                 'name' => $value->name,
                 'start' => $value->start,
-                'qr_code' => $qr_code,
+                'qr_code' => $qr_code ?? "MOBILE-PRESENCE",
                 'agenda' => $agenda
             ];
         }

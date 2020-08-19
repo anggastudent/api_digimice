@@ -23,5 +23,11 @@ class ParticipantOrderHistory extends Model implements AuthenticatableContract, 
     	return $this->belongsTo('App\Event','participant_event_id','id');
     }
 
+    public function user(){
+   		return $this->belonsTo('App\User','participant_user_id','id');
+   	}
+
+
+
    
 }

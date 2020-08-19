@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 use App\User;
 use App\Team;
 use App\Provinsi;
+use App\Event;
 use App\Pemateri;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Hash;
 
 class UsersController extends Controller
@@ -59,13 +61,87 @@ class UsersController extends Controller
                 ];
 
                 Team::create($data);
-                $user->update(['role' => "eo"]);
+                $token = $this->getRandomString();
+                $user->update([
+                    'role' => "eo",
+                    'verification_token' => $token,
+                    'status' => 'deactivated'
+                ]);
+
+                $event = Event::where('id', $event_id)->first();
+
+                $link = getenv('APP_URL')."/aktivasi/$token";
+                $name = $user->name;
+                $data = [
+                    'name' => $name,
+                    'body' => "Selamat Akun Anda sudah dibuat Sebagai Anggota Panitia Event $event->name. Silahkan melakukan aktivasi akun melalui link berikut $link "
+                ];
+
+                Mail::send('email.mail', $data, function($message) use ($name, $email){
+
+                    $message->to($email, $name)->subject('Pemberitahuan Akun');
+                    $message->from('admin@apidigimice.me', 'digiMICE Panitia');
+                });
+
                 return "berhasil";
             }
             
 
         }else{
-            return "email belum terdaftar";
+
+            $user = User::where('email',$email)->first();
+
+            if($user){
+                return "email sudah terdaftar";
+                
+            }else{
+
+                //return "email belum terdaftar";
+                $token = $this->getRandomString();
+                $name = "Anggota Panitia";
+
+                $create_user = User::create([
+                    'name' => $name,
+                    'email' => $email,
+                    'password_hash' => Hash::make("11111111"),
+                    'role' => "eo",
+                    'phone' => "123",
+                    'avatar' => "upload/images/blank.jpg",
+                    'verification_token' => $token,
+                    'regencies_id' => "3510"
+
+                ]);
+
+                $data = [
+                    'user_id' => $create_user->id,
+                    'event_id' => $event_id,
+                    'team_role' => "eo",
+                    'name_team' => $name_team
+                ];
+
+                Team::create($data);
+
+                $event = Event::where('id', $event_id)->first();
+
+                $link = getenv('APP_URL')."/aktivasi/$token";
+                $data = [
+                    'name' => $name,
+                    'body' => "Selamat Akun Anda sudah dibuat Sebagai Anggota Panitia Event $event->name. Silahkan melakukan aktivasi akun melalui link berikut $link ",
+                    'title' => "Kemudian Silahkan login dengan : ",
+                    'email' => "Email : $email",
+                    "password" => "Password : 11111111",
+                    'note' => "NOTE : JANGAN SEBARKAN KE ORANG LAIN AKUN ANDA !!"
+                ];
+
+                Mail::send('email.mail', $data, function($message) use ($name, $email){
+
+                    $message->to($email, $name)->subject('Pemberitahuan Akun');
+                    $message->from('admin@apidigimice.me', 'digiMICE Panitia');
+                });
+
+                return "Berhasil";
+            }
+            
         }
 
         
@@ -80,7 +156,7 @@ class UsersController extends Controller
         $regencies_id = $request->input('regencies_id');
         $event_id = $request->input('event_id');
         $password_hash = Hash::make($password);
-
+        $token = $this->getRandomString();
         $data = [
             'name' => $name,
             'email' => $email,
@@ -88,7 +164,8 @@ class UsersController extends Controller
             'phone' => $no_telp,
             'role' => "speaker",
             'regencies_id' => $regencies_id,
-            'avatar' => "upload/images/blank.jpg"
+            'avatar' => "upload/images/blank.jpg",
+            'verification_token' => $token
         ];
 
         if($user = User::where('email',$email)->first()){
@@ -103,6 +180,26 @@ class UsersController extends Controller
             ];
 
             Pemateri::create($data2);
+
+            $event = Event::where('id', $event_id)->first();
+
+            $link = getenv('APP_URL')."/aktivasi/$token";
+            $data = [
+                'name' => $name,
+
+                'body' => "Selamat Akun Anda Sudah dibuat sebagai Pemateri Event $event->name. Silahkan melakukan aktivasi akun melalui link berikut $link",
+
+                'title' => "Kemudian Silahkan login dengan : ",
+                'email' => "Email : $email",
+                "password" => "Password : $password",
+                'note' => "NOTE : JANGAN SEBARKAN KE ORANG LAIN AKUN ANDA !!"
+            ];
+
+            Mail::send('email.mail', $data, function($message) use ($name, $email){
+
+                $message->to($email, $name)->subject('Pemberitahuan Akun');
+                $message->from('admin@apidigimice.me', 'digiMICE Panitia');
+            });
 
             return "Berhasil ditambahkan";
         }
@@ -201,8 +298,10 @@ class UsersController extends Controller
                          
         ];
 
-        $user->update($data);
-        return "berhasil";
+        if($user->update($data)){
+
+            return "berhasil";
+        }
 
     }
 
@@ -226,5 +325,16 @@ class UsersController extends Controller
 
         
 
+    }
+
+    //Fungsi Random String
+    public function getRandomString($panjang = 32){
+        $karakter = '012345678dssd9abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $panjang_karakter = strlen($karakter);
+        $randomString = '';
+        for ($i = 0; $i < $panjang; $i++) {
+            $randomString .= $karakter[rand(0, $panjang_karakter - 1)];
+        }
+        return $randomString;
     }
 }

@@ -13,6 +13,7 @@ use App\Session;
 use App\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class EventPresensiController extends Controller
 {
@@ -111,6 +112,20 @@ class EventPresensiController extends Controller
                 ];
 
                 ParticipantOrderHistory::create($data3);
+                
+                $name = $user->name;
+                $email = $user->email;
+                
+                $data = [
+                    'name' => $name,
+                    'body' => "Selamat Anda Sudah Bergabung di Event $event->name"
+                ];
+
+                Mail::send('email.sukses', $data, function($message) use ($name, $email){
+
+                    $message->to($email, $name)->subject('Pemberitahuan Event');
+                    $message->from('admin@apidigimice.me', 'digiMICE Panitia');
+                });
             }
 
             return "Berhasil tambah participant";

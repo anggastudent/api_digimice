@@ -11,9 +11,12 @@ use App\Session;
 use App\ParticipantOrderHistory;
 use App\EventOrderHistory;
 use App\Refund;
+use App\User;
 use App\Speaker;
 use App\Participant;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+
 
 class EventController extends Controller
 {
@@ -33,8 +36,10 @@ class EventController extends Controller
     public function index(Request $request){
         
         $user_id = $request->input('user_id');
-        $team = Team::where('user_id', $user_id)->orderBy('id','DESC')->get();
-        
+        //$team = Team::where('user_id', $user_id)->orderBy('id','DESC')->get();
+        $team = Team::where('user_id',$user_id)->orderByDesc(
+            Event::select('start')->whereColumn('id','team.event_id')->orderBy('start', 'DESC')
+        )->get();
         $array = [];
 
         foreach ($team as $value) {
@@ -214,6 +219,7 @@ class EventController extends Controller
 
             EventOrderHistory::create($data3);
         }else{
+
              $data3 = [
                 'status' => "PAID",
                 'event_id' => $event->id,
@@ -223,6 +229,24 @@ class EventController extends Controller
             ];
 
             EventOrderHistory::create($data3);
+
+            $user = User::where('id', $user_id)->first();
+            $namePanitia = $user->name;
+
+            $dataEmail = [
+                'name' => $namePanitia,
+                'body' => "Selamat Event Paket Gratis $name Anda Berhasil ditambahkan"
+            ];
+
+            Mail::send('email.sukses', $dataEmail, function($message) use ($namePanitia, $email){
+
+                $message->to($email, $namePanitia)->subject('Pemberitahuan Event');
+                $message->from('admin@apidigimice.me', 'digiMICE Panitia');
+            });
+                 
+            
+
+
         }
         
         return "Berhasil ditambahkan";
@@ -235,7 +259,7 @@ class EventController extends Controller
         $event_id = $request->input('event_id');
 
         $event = Event::findOrFail($event_id);
-        $team = Team::where('user_id', $user_id)->where('event_id',$event_id)->first();
+        $team = Team::where('event_id', $event_id)->where('team_role','lead eo')->where('event_id',$event_id)->first();
 
         $array[] = [
             'name' => $event->name,
@@ -247,7 +271,7 @@ class EventController extends Controller
             'end' => $event->end,
             'price' => $event->paket->price,
             'ticket' => $event->event_ticket_price,
-            'panitia' => $team->name_team
+            'panitia' => $team->name_team ?? ""
             
         ];
         

@@ -14,6 +14,7 @@ use App\Team;
 use App\User;
 use App\Refund;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 
 class XenditController extends Controller
@@ -30,7 +31,8 @@ class XenditController extends Controller
     }
 
     public function createInvoice(){
-
+      
+      Xendit::setApiKey(getenv('SECRET_API_KEY'));
       $params = [
           'external_id' => 'tes_api_8',
           'payer_email' => 'anggadwisaputra83@gmail.com',
@@ -164,22 +166,63 @@ class XenditController extends Controller
 
           if($event_order_history = EventOrderHistory::where('id_invoice',$invoice_id)->first()){
             
+            $name = $event_order_history->user->name;
+            $email = $event_order_history->user->email;
+
             $event_order_history->update(['status' => $status]);
+
             $event = Event::where('id',$event_order_history->event_id)->first();
-            
+            $name_paket_event = $event->paket->name;
+            $name_event = $event->name;
+
             if($status == "PAID"){
+
               $event->update(['event_status' => "true"]);
+
+              $dataEmail = [
+                'name' => $name,
+                'body' => "Selamat Event $name_paket_event $name_event Anda Berhasil ditambahkan"
+              ];
+
+              Mail::send('email.sukses', $dataEmail, function($message) use ($name, $email){
+
+                  $message->to($email, $name)->subject('Pemberitahuan Event');
+                  $message->from('admin@apidigimice.me', 'digiMICE Panitia');
+              });
+
             }
 
           }
 
           if($participant_order_history = ParticipantOrderHistory::where('id_invoice',$invoice_id)->first()){
 
+              // 
+
               $participant_order_history->update(['status' => $status]);
+
               $participant = Participant::where('user_id',$participant_order_history->participant_user_id)->where('event_id',$participant_order_history->participant_event_id)->first();
 
+              $user = User::where('id',$participant->user_id)->first();
+              $event = Event::where('id', $participant->event_id)->first();
+              
               if($status == "PAID"){
+
                 $participant->update(['payment_status' => "Lunas"]);
+
+                $name = $user->name;
+                $email = $user->email;
+                $name_event = $event->name;
+
+                $datas = [
+                  'name' => $name,
+                  'body' => "Selamat Anda Sudah Bergabung di Event $name_event"
+                ];
+
+                Mail::send('email.sukses', $datas, function($message) use ($name, $email){
+
+                    $message->to($email, $name)->subject('Pemberitahuan Event');
+                    $message->from('admin@apidigimice.me', 'digiMICE Panitia');
+                });
               }
 
           }

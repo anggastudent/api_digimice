@@ -73,3 +73,5 @@ $router->get('alarm-agenda','EventAgendaController@alarmAgenda');
 $router->post('register-panitia','AuthController@registerPanitia');
 $router->get('available-bank','XenditController@getBank');
 $router->get('refund-list/{id}','EventController@refundList');
+$router->get('email-panitia','EmailController@registerPanitia');
+$router->get('aktivasi/{id}','EmailController@validasiEmailAkun');
